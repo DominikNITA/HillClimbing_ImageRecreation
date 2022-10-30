@@ -1,0 +1,12 @@
+﻿<h3>Analysis Result</h3>
+<div>
+    <div>Width: @Analysis.Width</div>
+    <div>Height: @Analysis.Height</div>
+    <div>Pixel Count: @Analysis.PixelCount</div>
+    <div>Detected colors: @Analysis.ColorCount</div>
+    <div>Contains Alpha: @Analysis.ContainsAlpha</div>
+</div>
+@code {
+    [Parameter]
+    public AnalysisResult Analysis { get; set; }
+}
