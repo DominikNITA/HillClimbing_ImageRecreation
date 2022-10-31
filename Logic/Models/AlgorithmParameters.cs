@@ -13,6 +13,8 @@ namespace Logic.Models
         public IEnumerable<Shape>? Shapes { get; set; }
         public bool AllowRotation { get; set; }
         public bool UseColorDict { get; set; }
+        public int MaxIterations { get; set; }
+        public bool ContainsAlpha { get; set; }
     }
 
     public enum Shape
