@@ -56,13 +56,13 @@ Upload image to start:
                             BackgroundColor = System.Drawing.Color.White,
                             MaxShapeSize = 25,
                             MinShapeSize = 2,
-                            Shapes = new List<Shape>() {Shape.Ellipse},
+                            Shapes = new List<Shape>() {Shape.Ellipse, Shape.Rectangle},
 
                         },
                         _path,
                         Path.Combine(Environment.ContentRootPath,
                         Environment.EnvironmentName));
 
-        algorithm.Calculate(10000);
+        algorithm.Calculate(1000);
     }
 }

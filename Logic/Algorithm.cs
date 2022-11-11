@@ -133,7 +133,7 @@ namespace Logic
         private Color GetRandomShapeColor()
         {
             return Color.FromArgb(
-                _random.Next(20, 256),
+                _parameters.AllowAlpha ? _random.Next(1, 256) : 255,
                 _random.Next(0, 256),
                 _random.Next(0, 256),
                 _random.Next(0, 256)
