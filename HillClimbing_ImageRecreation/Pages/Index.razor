@@ -6,6 +6,8 @@
 <h1>Hill Climbing Algorithm</h1>
 <h2>Image Recreation</h2>
 
+<ClearDataButton></ClearDataButton>
+
 Upload image to start:
 <InputFile OnChange="@LoadFiles" multiple />
 
@@ -49,7 +51,18 @@ Upload image to start:
     void Analyze()
     {
         _analysisResult = Analyzer.AnalyzeImage(_path);
-        algorithm = new(new() { BackgroundColor = System.Drawing.Color.PaleVioletRed }, _path, Path.Combine(Environment.ContentRootPath,
+        algorithm = new(
+                        new() { 
+                            BackgroundColor = System.Drawing.Color.White,
+                            MaxShapeSize = 25,
+                            MinShapeSize = 2,
+                            Shapes = new List<Shape>() {Shape.Ellipse},
+
+                        },
+                        _path,
+                        Path.Combine(Environment.ContentRootPath,
                         Environment.EnvironmentName));
+
+        algorithm.Calculate(10000);
     }
 }

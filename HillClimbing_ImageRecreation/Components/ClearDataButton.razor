@@ -1,0 +1,20 @@
+﻿@inject IWebHostEnvironment Environment
+
+<button @onclick=@ClearData>Clear data</button>
+
+@code {
+    void ClearData()
+    {
+        var directoryToClear = new DirectoryInfo(Path.Combine(Environment.ContentRootPath,Environment.EnvironmentName));
+
+        foreach (FileInfo file in directoryToClear.GetFiles())
+        {
+            file.Delete(); 
+        }
+        foreach (DirectoryInfo dir in directoryToClear.GetDirectories())
+        {
+            dir.Delete(true); 
+        }
+        directoryToClear.CreateSubdirectory("unsafe_uploads");
+    }
+}

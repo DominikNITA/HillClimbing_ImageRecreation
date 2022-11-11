@@ -9,7 +9,7 @@ namespace Logic.Models
     public class AlgorithmResult
     {
         public int Iteration { get; set; }
-        public int Score { get; set; }
+        public double Score { get; set; }
         public string PathToImage { get; set; }
     }
 }
