@@ -8,29 +8,32 @@
 
 <ClearDataButton></ClearDataButton>
 
-Upload image to start:
-<InputFile OnChange="@LoadFiles" multiple />
+<div>
+    Upload image to start:
+    <InputFile OnChange="@LoadFiles" multiple />
+</div>
 
-@if (_file != null)
+@if (_analysisResult != null)
 {
     <h3>Uploaded image:</h3>
-    @*<img src="@path"/>*@
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-    <div>Image name: @_file.Name</div>
-
+    <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
+    <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Start!</SfButton>
 }
 
-    <button @onclick="@Analyze">Analyze</button>
-    @if (_analysisResult != null)
-    {
-        <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
-    }
+@if (_algorithmResult != null)
+{
+    <h3>Result after @_algorithmResult.Iteration iterations</h3>
+    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_algorithmResult.PathToImage))">
+    <span>Score: @GetScorePercentage()%</span> 
+}
 
 @code {
     IBrowserFile? _file = null;
     string _path = "";
     AnalysisResult? _analysisResult;
-    Algorithm? algorithm;
+    AlgorithmResult? _algorithmResult;
+    Algorithm? _algorithm;
 
     private async void LoadFiles(InputFileChangeEventArgs e)
     {
@@ -42,27 +45,39 @@ Upload image to start:
                         Environment.EnvironmentName, "unsafe_uploads",
                         trustedFileNameForFileStorage);
 
-        await using FileStream fs = new(_path, FileMode.Create);
-        await e.File.OpenReadStream().CopyToAsync(fs);
-        _file = e.File;
-        //StateHasChanged();
+        using (FileStream fs = new(_path, FileMode.Create))
+        {
+            await e.File.OpenReadStream().CopyToAsync(fs);
+        }
+
+        _analysisResult = Analyzer.AnalyzeImage(_path);
+
+        _algorithm = new(
+                new()
+                    {
+                        BackgroundColor = System.Drawing.Color.Transparent,
+                        MaxShapeSize = 80,
+                        MinShapeSize = 3,
+                        Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle },
+                        AllowAlpha = true,
+                        AllowRotation = true,
+                        MaxIterations = 1000,
+                        UseColorDict = true,
+                    },
+                _path,
+                Path.Combine(Environment.ContentRootPath,
+                Environment.EnvironmentName));
+
+        StateHasChanged();
     }
 
-    void Analyze()
+    void PerformAlgorithmCalculations()
     {
-        _analysisResult = Analyzer.AnalyzeImage(_path);
-        algorithm = new(
-                        new() { 
-                            BackgroundColor = System.Drawing.Color.White,
-                            MaxShapeSize = 25,
-                            MinShapeSize = 2,
-                            Shapes = new List<Shape>() {Shape.Ellipse, Shape.Rectangle},
+        _algorithmResult = _algorithm!.Calculate(250);
+    }
 
-                        },
-                        _path,
-                        Path.Combine(Environment.ContentRootPath,
-                        Environment.EnvironmentName));
-
-        algorithm.Calculate(1000);
+    double? GetScorePercentage()
+    {
+        return (1 - ((double)_algorithmResult!.Score) / (_analysisResult?.Width * _analysisResult?.Height * 4)) * 100;
     }
 }

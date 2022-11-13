@@ -103,10 +103,10 @@ namespace Logic
         {
             var targetPixel = _targetImageBitmap.GetPixel(x, y);
             double score = 0;
-            score += Math.Pow(Math.Abs((double)targetPixel.A - pixelColor.A), 2);
-            score += Math.Pow(Math.Abs((double)targetPixel.R - pixelColor.R), 2);
-            score += Math.Pow(Math.Abs((double)targetPixel.G - pixelColor.G), 2);
-            score += Math.Pow(Math.Abs((double)targetPixel.B - pixelColor.B), 2);
+            score += Math.Abs((targetPixel.A - pixelColor.A)/(double)255);
+            score += Math.Abs((targetPixel.R - pixelColor.R)/(double)255);
+            score += Math.Abs((targetPixel.G - pixelColor.G)/(double)255);
+            score += Math.Abs((targetPixel.B - pixelColor.B)/(double)255);
 
             return score;
         }

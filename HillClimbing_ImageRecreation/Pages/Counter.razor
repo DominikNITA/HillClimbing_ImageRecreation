@@ -1,18 +1,65 @@
 ﻿@page "/counter"
+@using Syncfusion.Blazor.Diagram
 
 <PageTitle>Counter</PageTitle>
 
-<h1>Counter</h1>
+<h1>Bezier tests</h1>
 
-<p role="status">Current count: @currentCount</p>
+<div class="bezier-wrapper">
+    <SfDiagramComponent Width="100%" Height="200px" Connectors="@connectors">
+        <ScrollSettings ScrollLimit="@ScrollLimitMode.Diagram">
+        </ScrollSettings>
+        <SnapSettings Constraints="SnapConstraints.All">
+            <HorizontalGridLines SnapIntervals="@SnapInterval">
+            </HorizontalGridLines>
+            <VerticalGridLines SnapIntervals="@SnapInterval">
+            </VerticalGridLines>
+        </SnapSettings>
+    </SfDiagramComponent>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<style>
+    .bezier-wrapper {
+        width: 200px;
+        height: 200px;
+    }
+</style>
 
-@code {
-    private int currentCount = 0;
-
-    private void IncrementCount()
+@code
+{
+        public double[] SnapInterval { get; set; } = new double[]
     {
-        currentCount++;
+        5
+    };
+
+    //Defines diagram's connector collection.
+    DiagramObjectCollection<Connector> connectors = new DiagramObjectCollection<Connector>();
+
+    protected override void OnInitialized()
+    {
+        Connector Connector = new Connector()
+            {
+                ID = "connector1",
+                SourcePoint = new DiagramPoint()
+                {
+                    X = 5,
+                    Y = 30
+                },
+                Style = new ShapeStyle() { StrokeColor = "#6f409f", StrokeWidth = 1 },
+                TargetPoint = new DiagramPoint() { X = 190, Y = 30 },
+                Type = ConnectorSegmentType.Bezier,
+                TargetDecorator = new DecoratorSettings()
+                {
+                    Shape = DecoratorShape.Arrow,
+                    Style = new ShapeStyle()
+                    {
+                        Fill = "#6f409f",
+                        StrokeColor = "#6f409f",
+                        StrokeWidth = 1
+                    }
+                }
+            };
+        //Add the connector into connectors's collection.
+        connectors.Add(Connector);
     }
 }

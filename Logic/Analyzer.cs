@@ -26,11 +26,10 @@ namespace Logic
                 for (int j = 0; j < bitmap.Height; j++)
                 {
                     var pixel = bitmap.GetPixel(i, j);
-                    colors.Add(pixel.ToArgb());
-                    
+                    colors.Add(pixel.ToArgb());                    
                 }
             }
-            return colors.Count;
+            return colors.Distinct().Count();
         }
     }
 }
