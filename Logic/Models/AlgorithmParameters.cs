@@ -12,13 +12,10 @@ namespace Logic.Models
         [Required]
         public int MaxIterations { get; set; }
         public Color BackgroundColor { get; set; }
-        [Required]
         public IEnumerable<Shape>? Shapes { get; set; }
-        [Required]
-        public int MaxShapeSize { get; set; }
-        [Required]
-        public int MinShapeSize { get; set; }
-        public int[] ShapeSizeLimits { get; set; }
+        public int?[]? ShapeSizeLimits { get; set; }
+        public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }
+        public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? -1; } }
         [Required]
         public bool UseColorDict { get; set; }
         [Required]

@@ -20,7 +20,7 @@
     if (_algorithmResult == null)
     {
         <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
-        <ParametersSettings></ParametersSettings>
+        <ParametersSettings Analysis="@_analysisResult"></ParametersSettings>
     }
     <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Start!</SfButton>
 }
@@ -59,8 +59,6 @@
                 new()
                     {
                         BackgroundColor = System.Drawing.Color.Transparent,
-                        MaxShapeSize = 80,
-                        MinShapeSize = 3,
                         Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle },
                         AllowAlpha = true,
                         AllowRotation = true,

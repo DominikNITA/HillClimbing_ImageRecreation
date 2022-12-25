@@ -17,19 +17,29 @@
     <Row>
         <Col Size="6">
         <label class="form-label">Shape size limits:</label>
-        <SfSlider @bind-Value="parametersModel.ShapeSizeLimits" Type="SliderType.Range"></SfSlider>
+        <SfSlider @bind-Value="parametersModel.ShapeSizeLimits"
+                  Type="SliderType.Range"
+                  Min="0"
+                  Max="GetMaxShapeLimit()">
+            <SliderTicks Placement="Placement.After" ShowSmallTicks="true" LargeStep="GetMaxShapeLimit()/10 - GetMaxShapeLimit()%10" SmallStep="1"></SliderTicks>
+            <SliderTooltip IsVisible="true" ShowOn="TooltipShowOn.Always" Placement="TooltipPlacement.Before"></SliderTooltip>
+            <SliderLimits MinStart="1" Enabled="true"></SliderLimits>
+        </SfSlider>
         </Col>
     </Row>
     <Row>
         <Col Size="6">
-        <SfColorPicker ModeSwitcher="false" ShowButtons="false" ValueChanged="@OnColorChanged">Background Color</SfColorPicker>
+        <label class="form-label">Background Color:</label>
+        <Row>
+            <SfColorPicker ModeSwitcher="false" ShowButtons="false" ValueChanged="@OnColorChanged" Value="aa002040"></SfColorPicker>
+        </Row>
         </Col>
     </Row>
     <Row>
-        <Col Size="6">
+        <Col Size="2">
         <SfCheckBox @bind-Checked="@parametersModel.AllowRotation">Allow rotation</SfCheckBox>
         </Col>
-        <Col Size="6">
+        <Col Size="2">
         <SfCheckBox @bind-Checked="@parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
         </Col>
     </Row>
@@ -42,8 +52,23 @@
     [Parameter]
     public EventCallback<AlgorithmParameters> OnAlgorithmParametersSet { get; set; }
 
+    [Parameter]
+    public AnalysisResult? Analysis { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        parametersModel.ShapeSizeLimits = new int?[] { 1, GetMaxShapeLimit() };
+        parametersModel.BackgroundColor = Color.Beige;
+    }
+
+    private int GetMaxShapeLimit()
+    {
+        return Math.Max(Analysis?.Width ?? 1, Analysis?.Height ?? 1);
+    }
+
     private async void HandleValidSubmit()
     {
+        System.Console.WriteLine(parametersModel.PropertiesToString());
         await OnAlgorithmParametersSet.InvokeAsync(parametersModel);
     }
 
@@ -55,11 +80,11 @@
             int.Parse(value.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
             int.Parse(value.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
         );
-        Console.WriteLine("Color changed: " + value);
-        Console.WriteLine("Red: " + parametersModel.BackgroundColor.R);
-        Console.WriteLine("Green: " + parametersModel.BackgroundColor.G);
-        Console.WriteLine("Blue: " + parametersModel.BackgroundColor.B);
-        Console.WriteLine("Alpha: " + parametersModel.BackgroundColor.A);
+        //Console.WriteLine("Color changed: " + value);
+        //Console.WriteLine("Red: " + parametersModel.BackgroundColor.R);
+        //Console.WriteLine("Green: " + parametersModel.BackgroundColor.G);
+        //Console.WriteLine("Blue: " + parametersModel.BackgroundColor.B);
+        //Console.WriteLine("Alpha: " + parametersModel.BackgroundColor.A);
         //parametersModel.BackgroundColor = ColorTranslator.FromArgb(args.CurrentValue.);
     }
 }
