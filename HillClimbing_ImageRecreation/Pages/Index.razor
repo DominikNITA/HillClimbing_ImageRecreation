@@ -55,19 +55,18 @@
 
         _analysisResult = Analyzer.AnalyzeImage(_path);
 
-        _algorithm = new(
-                new()
-                    {
-                        BackgroundColor = System.Drawing.Color.Transparent,
-                        Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle },
-                        AllowAlpha = true,
-                        AllowRotation = true,
-                        MaxIterations = 1000,
-                        UseColorDict = true,
-                    },
-                _path,
-                Path.Combine(Environment.ContentRootPath,
-                Environment.EnvironmentName));
+        //_algorithm = new(
+        //        new()
+        //            {
+        //                Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle },
+        //                AllowAlpha = true,
+        //                AllowRotation = true,
+        //                MaxIterations = 1000,
+        //                UseColorDict = true,
+        //            },
+        //        _path,
+        //        Path.Combine(Environment.ContentRootPath,
+        //        Environment.EnvironmentName));
 
         StateHasChanged();
     }

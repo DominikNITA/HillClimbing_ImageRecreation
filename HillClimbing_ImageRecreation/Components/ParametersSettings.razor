@@ -31,7 +31,7 @@
         <Col Size="6">
         <label class="form-label">Background Color:</label>
         <Row>
-            <SfColorPicker ModeSwitcher="false" ShowButtons="false" ValueChanged="@OnColorChanged" Value="aa002040"></SfColorPicker>
+            <SfColorPicker ModeSwitcher="false" ShowButtons="false" ValueChanged="@OnColorChanged" Value="@parametersModel.BackgroundColorString"></SfColorPicker>
         </Row>
         </Col>
     </Row>
@@ -58,7 +58,7 @@
     protected override void OnParametersSet()
     {
         parametersModel.ShapeSizeLimits = new int?[] { 1, GetMaxShapeLimit() };
-        parametersModel.BackgroundColor = Color.Beige;
+        parametersModel.BackgroundColorString = "#e1d9d9ff";
     }
 
     private int GetMaxShapeLimit()
@@ -74,17 +74,6 @@
 
     public void OnColorChanged(string value)
     {
-        parametersModel.BackgroundColor = Color.FromArgb(
-            int.Parse(value.Substring(7), System.Globalization.NumberStyles.HexNumber),
-            int.Parse(value.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
-            int.Parse(value.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
-            int.Parse(value.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
-        );
-        //Console.WriteLine("Color changed: " + value);
-        //Console.WriteLine("Red: " + parametersModel.BackgroundColor.R);
-        //Console.WriteLine("Green: " + parametersModel.BackgroundColor.G);
-        //Console.WriteLine("Blue: " + parametersModel.BackgroundColor.B);
-        //Console.WriteLine("Alpha: " + parametersModel.BackgroundColor.A);
-        //parametersModel.BackgroundColor = ColorTranslator.FromArgb(args.CurrentValue.);
+        parametersModel.BackgroundColorString = value;
     }
 }

@@ -11,7 +11,19 @@ namespace Logic.Models
     {
         [Required]
         public int MaxIterations { get; set; }
-        public Color BackgroundColor { get; set; }
+        public string BackgroundColorString { get; set; }
+        public Color BackgroundColor
+        {
+            get
+            {
+                return Color.FromArgb(
+                    int.Parse(BackgroundColorString.Substring(7), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundColorString.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundColorString.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundColorString.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
+                    );
+            }
+        }
         public IEnumerable<Shape>? Shapes { get; set; }
         public int?[]? ShapeSizeLimits { get; set; }
         public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }

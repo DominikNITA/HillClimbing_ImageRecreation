@@ -37,7 +37,7 @@ namespace Logic.Helpers
                     {
                         result += "    ";
                     }
-                    if(value is IEnumerable)
+                    if(value is IEnumerable && valueType.Name.Equals("String") == false)
                     {
                         var entries = new List<string>();
                         foreach (var listitem in value as IEnumerable)
