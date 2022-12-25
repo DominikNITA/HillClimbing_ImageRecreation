@@ -4,7 +4,7 @@
 <PageTitle>Hill Climbing Algorithm</PageTitle>
 
 <h1>Hill Climbing Algorithm</h1>
-<h2>Image Recreation</h2>
+<h2>Image Recreation - description lorem ipsum</h2>
 
 <ClearDataButton></ClearDataButton>
 
@@ -17,7 +17,11 @@
 {
     <h3>Uploaded image:</h3>
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-    <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
+    if (_algorithmResult == null)
+    {
+        <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
+        <ParametersSettings></ParametersSettings>
+    }
     <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Start!</SfButton>
 }
 
@@ -25,11 +29,10 @@
 {
     <h3>Result after @_algorithmResult.Iteration iterations</h3>
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_algorithmResult.PathToImage))">
-    <span>Score: @GetScorePercentage()%</span> 
+    <span>Score: @GetScorePercentage()%</span>
 }
 
 @code {
-    IBrowserFile? _file = null;
     string _path = "";
     AnalysisResult? _analysisResult;
     AlgorithmResult? _algorithmResult;

@@ -1,0 +1,65 @@
+﻿@using Syncfusion.Blazor.Inputs
+@using System.Drawing
+
+<h3>ParametersSettings</h3>
+
+<EditForm Model="@parametersModel" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    @*    <div class="form-group">
+        <label for="MinShapeSize">Min:</label>
+        <SfNumericTextBox ID="MinShapeSize" @bind-Value="parametersModel.MinShapeSize" TValue="int"></SfNumericTextBox>
+        </div>
+        <div class="form-group">
+        <label for="MaxShapeSize">Max:</label>
+        <SfNumericTextBox ID="MaxShapeSize" @bind-Value="parametersModel.MaxShapeSize"></SfNumericTextBox>
+        </div>*@
+    <Row>
+        <Col Size="6">
+        <label class="form-label">Shape size limits:</label>
+        <SfSlider @bind-Value="parametersModel.ShapeSizeLimits" Type="SliderType.Range"></SfSlider>
+        </Col>
+    </Row>
+    <Row>
+        <Col Size="6">
+        <SfColorPicker ModeSwitcher="false" ShowButtons="false" ValueChanged="@OnColorChanged">Background Color</SfColorPicker>
+        </Col>
+    </Row>
+    <Row>
+        <Col Size="6">
+        <SfCheckBox @bind-Checked="@parametersModel.AllowRotation">Allow rotation</SfCheckBox>
+        </Col>
+        <Col Size="6">
+        <SfCheckBox @bind-Checked="@parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
+        </Col>
+    </Row>
+    <SfButton type="submit">Submit</SfButton>
+</EditForm>
+
+@code {
+    private AlgorithmParameters parametersModel = new();
+
+    [Parameter]
+    public EventCallback<AlgorithmParameters> OnAlgorithmParametersSet { get; set; }
+
+    private async void HandleValidSubmit()
+    {
+        await OnAlgorithmParametersSet.InvokeAsync(parametersModel);
+    }
+
+    public void OnColorChanged(string value)
+    {
+        parametersModel.BackgroundColor = Color.FromArgb(
+            int.Parse(value.Substring(7), System.Globalization.NumberStyles.HexNumber),
+            int.Parse(value.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
+            int.Parse(value.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
+            int.Parse(value.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
+        );
+        Console.WriteLine("Color changed: " + value);
+        Console.WriteLine("Red: " + parametersModel.BackgroundColor.R);
+        Console.WriteLine("Green: " + parametersModel.BackgroundColor.G);
+        Console.WriteLine("Blue: " + parametersModel.BackgroundColor.B);
+        Console.WriteLine("Alpha: " + parametersModel.BackgroundColor.A);
+        //parametersModel.BackgroundColor = ColorTranslator.FromArgb(args.CurrentValue.);
+    }
+}

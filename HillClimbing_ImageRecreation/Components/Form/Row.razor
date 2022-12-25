@@ -1,0 +1,9 @@
+﻿
+<div class="row m-2">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}
