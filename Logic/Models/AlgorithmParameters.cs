@@ -11,7 +11,7 @@ namespace Logic.Models
     {
         [Required]
         public int MaxIterations { get; set; }
-        public string BackgroundColorString { get; set; }
+        public string BackgroundColorString { get; set; } = string.Empty;
         public Color BackgroundColor
         {
             get
@@ -29,17 +29,17 @@ namespace Logic.Models
         public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }
         public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? -1; } }
         [Required]
-        public bool UseColorDict { get; set; }
-        [Required]
         public bool AllowRotation { get; set; }
         [Required]
         public bool AllowAlpha { get; set; }
+        [Required]
+        public bool UseColorDict { get; set; }
     }
 
     public enum Shape
     {
         Ellipse,
         Rectangle,
-        Traingle
+        Triangle
     }
 }

@@ -1,4 +1,5 @@
-﻿@using Syncfusion.Blazor.Inputs
+﻿@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Inputs
 @using System.Drawing
 
 <h3>ParametersSettings</h3>
@@ -6,14 +7,7 @@
 <EditForm Model="@parametersModel" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
-    @*    <div class="form-group">
-        <label for="MinShapeSize">Min:</label>
-        <SfNumericTextBox ID="MinShapeSize" @bind-Value="parametersModel.MinShapeSize" TValue="int"></SfNumericTextBox>
-        </div>
-        <div class="form-group">
-        <label for="MaxShapeSize">Max:</label>
-        <SfNumericTextBox ID="MaxShapeSize" @bind-Value="parametersModel.MaxShapeSize"></SfNumericTextBox>
-        </div>*@
+
     <Row>
         <Col Size="6">
         <label class="form-label">Shape size limits:</label>
@@ -36,11 +30,26 @@
         </Col>
     </Row>
     <Row>
+        <label class="form-label">Other settings:</label>
         <Col Size="2">
         <SfCheckBox @bind-Checked="@parametersModel.AllowRotation">Allow rotation</SfCheckBox>
         </Col>
         <Col Size="2">
         <SfCheckBox @bind-Checked="@parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
+        </Col>
+        <Col Size="2">
+        <SfNumericTextBox TValue="int?" Min="100" Max="20000" Step="100" Format="#####" Value=@parametersModel.MaxIterations></SfNumericTextBox>
+        </Col>
+    </Row>
+    <Row>
+        <Col Size="6">
+        <Syncfusion.Blazor.DropDowns.SfMultiSelect TValue="IEnumerable<Shape>" TItem="Shape" @bind-Value="@parametersModel.Shapes" DataSource="new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle }" ShowClearButton="true" >
+            <MultiSelectTemplates TItem="Shape" Context="msContext">
+                <ItemTemplate>
+                    <span>@msContext</span>
+                </ItemTemplate>
+            </MultiSelectTemplates>
+        </Syncfusion.Blazor.DropDowns.SfMultiSelect>
         </Col>
     </Row>
     <SfButton type="submit">Submit</SfButton>
@@ -59,6 +68,8 @@
     {
         parametersModel.ShapeSizeLimits = new int?[] { 1, GetMaxShapeLimit() };
         parametersModel.BackgroundColorString = "#e1d9d9ff";
+        parametersModel.MaxIterations = 1000;
+        parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
     }
 
     private int GetMaxShapeLimit()
