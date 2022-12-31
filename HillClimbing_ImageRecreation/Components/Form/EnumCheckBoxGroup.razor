@@ -1,0 +1,41 @@
+﻿@typeparam TEnum
+
+@foreach (var item in CheckableEnums)
+{
+    <Row>
+        <SfCheckBox @bind-Checked="@item.IsSelected" @onchange="OnChange">@item.EnumValue?.ToString()</SfCheckBox>
+    </Row>
+}
+
+@code {
+    [Parameter] public bool AllInitiallySelected { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<IEnumerable<TEnum>> OnChangeCallback { get; set; }
+
+    public class CheckableEnum
+    {
+        public TEnum? EnumValue { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    List<CheckableEnum> CheckableEnums { get; set; } = new List<CheckableEnum>();
+
+    protected override void OnInitialized()
+    {
+        foreach (var DPvalue in Enum.GetValues(typeof(TEnum)))
+        {
+            CheckableEnums.Add(new CheckableEnum()
+                {
+                    EnumValue = (TEnum)DPvalue,
+                    IsSelected = AllInitiallySelected
+                }
+            );
+        }
+    }
+
+    private async void OnChange(ChangeEventArgs args)
+    {
+        await OnChangeCallback.InvokeAsync(CheckableEnums.Where(x => x.IsSelected).Select(x => x.EnumValue!));
+    }
+}

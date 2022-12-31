@@ -8,28 +8,38 @@
 
 <ClearDataButton></ClearDataButton>
 
-<div>
-    Upload image to start:
-    <InputFile OnChange="@LoadFiles" multiple />
-</div>
-
-@if (_analysisResult != null)
+@if (_currentState is State.SelectingImage or State.SettingParameters)
 {
-    <h3>Uploaded image:</h3>
-    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-    if (_algorithmResult == null)
-    {
-        <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
-        <ParametersSettings Analysis="@_analysisResult"></ParametersSettings>
-    }
-    <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Start!</SfButton>
+    <div>
+        Upload image to start:
+        <InputFile OnChange="@LoadFiles" multiple />
+    </div>
 }
 
-@if (_algorithmResult != null)
+
+@if (_currentState is State.SettingParameters)
 {
-    <h3>Result after @_algorithmResult.Iteration iterations</h3>
+    <Row>
+        <Column Size="6">
+            <h3>Uploaded image:</h3>
+            <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+            <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
+        </Column>
+        <Column Size="6">
+            <ParametersSettings Analysis="@_analysisResult" OnAlgorithmParametersSet="@CreateAlgorithm"></ParametersSettings>
+        </Column>
+    </Row>
+}
+
+@if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped)
+{
+    <h3>Result after @_algorithmResult!.Iteration iterations</h3>
+    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_algorithmResult.PathToImage))">
     <span>Score: @GetScorePercentage()%</span>
+
+    <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">MOOOOORE!</SfButton>
+
 }
 
 @code {
@@ -37,6 +47,7 @@
     AnalysisResult? _analysisResult;
     AlgorithmResult? _algorithmResult;
     Algorithm? _algorithm;
+    State _currentState = State.SelectingImage;
 
     private async void LoadFiles(InputFileChangeEventArgs e)
     {
@@ -53,31 +64,39 @@
             await e.File.OpenReadStream().CopyToAsync(fs);
         }
 
+        _currentState = State.AnalyzingImage;
         _analysisResult = Analyzer.AnalyzeImage(_path);
 
-        //_algorithm = new(
-        //        new()
-        //            {
-        //                Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle },
-        //                AllowAlpha = true,
-        //                AllowRotation = true,
-        //                MaxIterations = 1000,
-        //                UseColorDict = true,
-        //            },
-        //        _path,
-        //        Path.Combine(Environment.ContentRootPath,
-        //        Environment.EnvironmentName));
-
+        _currentState = State.SettingParameters;
         StateHasChanged();
+    }
+
+    void CreateAlgorithm(AlgorithmParameters algorithmParameters)
+    {
+        _algorithm = new Algorithm(algorithmParameters, _path,
+                Path.Combine(Environment.ContentRootPath,
+                Environment.EnvironmentName));
+        _currentState = State.AlgorithmWorking;
+        PerformAlgorithmCalculations();
     }
 
     void PerformAlgorithmCalculations()
     {
-        _algorithmResult = _algorithm!.Calculate(250);
+        _algorithmResult = _algorithm!.Calculate(50);
     }
 
     double? GetScorePercentage()
     {
         return (1 - ((double)_algorithmResult!.Score) / (_analysisResult?.Width * _analysisResult?.Height * 4)) * 100;
+    }
+
+    enum State
+    {
+        SelectingImage,
+        AnalyzingImage,
+        SettingParameters,
+        AlgorithmWorking,
+        AlgorithmStopped,
+        AlgorithmFinished
     }
 }

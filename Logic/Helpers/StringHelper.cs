@@ -10,17 +10,6 @@ namespace Logic.Helpers
 {
     public static class StringHelper
     {
-        public static string ListProperties(this object obj)
-        {
-            var props = obj.GetType().GetProperties();
-            var sb = new StringBuilder();
-            foreach (var p in props)
-            {
-                sb.AppendLine(p.Name + ": " + p.GetValue(obj, null));
-            }
-            return sb.ToString();
-        }
-
         public static string PropertiesToString<T>(this T obj, int tabs = 0) where T : class
         {
             int initTabs = tabs;

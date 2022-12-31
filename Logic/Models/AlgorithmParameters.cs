@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using static Logic.Helpers.ValidationHelper;
+
 namespace Logic.Models
 {
     public class AlgorithmParameters
@@ -24,10 +26,13 @@ namespace Logic.Models
                     );
             }
         }
+        [Required]
+        [MustHaveOneElementAttribute("Select at least one shape")]
         public IEnumerable<Shape>? Shapes { get; set; }
+        [Required]
         public int?[]? ShapeSizeLimits { get; set; }
         public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }
-        public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? -1; } }
+        public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? 1; } }
         [Required]
         public bool AllowRotation { get; set; }
         [Required]
