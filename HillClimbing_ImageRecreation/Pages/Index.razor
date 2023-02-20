@@ -80,9 +80,22 @@
         PerformAlgorithmCalculations();
     }
 
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == false &&
+            _algorithmResult != null &&
+            _algorithmResult.Iteration < _algorithm?.GetMaxIterations()
+        )
+        {
+            PerformAlgorithmCalculations();
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
     void PerformAlgorithmCalculations()
     {
-        _algorithmResult = _algorithm!.Calculate(50);
+        _algorithmResult = _algorithm!.CalculateNextImage();
+        StateHasChanged();
     }
 
     double? GetScorePercentage()

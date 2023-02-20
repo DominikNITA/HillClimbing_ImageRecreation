@@ -37,13 +37,13 @@
         </Column>
         <Column Size="4">
             <label class="form-label">Max iterations:</label>
-            <SfNumericTextBox TValue="int?" Min="100" Max="20000" Step="100" Format="#####" Value=@parametersModel.MaxIterations></SfNumericTextBox>
+            <SfNumericTextBox TValue="int" Min="100" Max="20000" Step="100" Format="#####" @bind-Value=@parametersModel.MaxIterations></SfNumericTextBox>
         </Column>
     </Row>
     <Row>
         <label class="form-label">Other settings:</label>
         <Column Size="4">
-            <SfCheckBox @bind-Checked="@parametersModel.AllowRotation">Allow rotation</SfCheckBox>
+            <SfCheckBox @bind-Checked="@parametersModel.AllowRotation" Disabled>Allow rotation (WIP)</SfCheckBox>
         </Column>
         <Column Size="4">
             <SfCheckBox @bind-Checked="@parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
@@ -70,6 +70,9 @@
         parametersModel.BackgroundColorString = "#e1d9d9ff";
         parametersModel.MaxIterations = 1000;
         parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
+        parametersModel.ScoreCalculationInterval = 20;
+        parametersModel.ImagePresentationInterval = 1;
+        parametersModel.UseBackgroundColorChance = 0.025;
     }
 
     private int GetMaxShapeLimit()

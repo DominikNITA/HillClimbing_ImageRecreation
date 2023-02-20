@@ -33,13 +33,14 @@ namespace Logic
             Initialize();
         }
 
-        public AlgorithmResult Calculate(int iterations)
+        public AlgorithmResult CalculateNextImage()
         {
-            for (int i = 0; i < iterations; i++)
+            for (int i = 0; i < _parameters.ImagePresentationInterval; i++)
             {
                 _currentIteration++;
+                Console.WriteLine($"Calculating iteration: {_currentIteration}");
                 int attempts = 0;
-                while (Calculate() == false)
+                while (NextIteration() == false)
                 {
                     attempts++;
                     if (attempts >= 10000)
@@ -47,18 +48,21 @@ namespace Logic
                         throw new Exception("Could not find better solution in 100 attempts");
                     }
                 }
-                if (_currentIteration % 50 == 0)
+                if (_currentIteration % _parameters.ScoreCalculationInterval == 0)
                 {
-                    Console.WriteLine($"Score for iteration {_currentIteration}: " + GetScore(_lastImageBitmap,
-                             new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
-                             new Point() { X = 0, Y = 0 }
-                            ));
+                    UpdateLastScore();
+                }
+                if (_currentIteration >= _parameters.MaxIterations)
+                {
+                    UpdateLastScore();
+                    break;
                 }
             }
+
             return CalculateResult();
         }
 
-        private bool Calculate()
+        private bool NextIteration()
         {
             Shape shapeToDraw = GetRandomShapeToDraw(_parameters);
             Size shapeSize = GetRandomShapeSize(_parameters);
@@ -99,14 +103,27 @@ namespace Logic
             return score;
         }
 
+        /// <summary>
+        /// Calculates the score for given pixel. Best score 0, worst score 4
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="pixelColor"></param>
+        /// <returns></returns>
         private double CalculateScoreForPixel(int x, int y, Color pixelColor)
         {
             var targetPixel = _targetImageBitmap.GetPixel(x, y);
             double score = 0;
-            score += Math.Abs((targetPixel.A - pixelColor.A)/(double)255);
-            score += Math.Abs((targetPixel.R - pixelColor.R)/(double)255);
-            score += Math.Abs((targetPixel.G - pixelColor.G)/(double)255);
-            score += Math.Abs((targetPixel.B - pixelColor.B)/(double)255);
+
+            // If both pixels are completly transparent we don't compare other colors
+            if (targetPixel.A == 0 && pixelColor.A == 0)
+            {
+                return 0;
+            }
+            score += Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
+            score += Math.Abs((targetPixel.R - pixelColor.R) / (double)255);
+            score += Math.Abs((targetPixel.G - pixelColor.G) / (double)255);
+            score += Math.Abs((targetPixel.B - pixelColor.B) / (double)255);
 
             return score;
         }
@@ -116,14 +133,42 @@ namespace Logic
             Bitmap currentIterationBitmap = new(_lastImageBitmap);
             using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
             {
+                if (_random.NextDouble() < _parameters.UseBackgroundColorChance)
+                {
+                    currentIterationGraphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                    shapeColor = _parameters.BackgroundColor;
+                }
+
+                var x = shapePosition.X;
+                var y = shapePosition.Y;
+                var width = shapeSize.Width;
+                var height = shapeSize.Height;
+                var brush = new SolidBrush(shapeColor);
+
                 if (shapeToDraw == Shape.Ellipse)
                 {
-                    currentIterationGraphics.FillEllipse(new SolidBrush(shapeColor), shapePosition.X, shapePosition.Y, shapeSize.Width, shapeSize.Height);
+                    currentIterationGraphics.FillEllipse(brush, x, y, width, height);
+                }
+                else if (shapeToDraw == Shape.Circle)
+                {
+                    currentIterationGraphics.FillEllipse(brush, x, y, width, width);
+                }
+                else if (shapeToDraw == Shape.Triangle)
+                {
+                    var trianglePoints = new Point[]
+                    {
+                        new(x, y),
+                        new(x + width, y),
+                        new(x + width/2, y + height),
+                    };
+                    currentIterationGraphics.FillPolygon(brush, trianglePoints);
                 }
                 else if (shapeToDraw == Shape.Rectangle)
                 {
-                    currentIterationGraphics.FillRectangle(new SolidBrush(shapeColor), new Rectangle(shapePosition.X, shapePosition.Y, shapeSize.Width, shapeSize.Height));
+                    currentIterationGraphics.FillRectangle(brush, new Rectangle(x, y, width, height));
                 }
+                brush.Dispose();
+
                 var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
                 currentIterationBitmap.Save(pathToImage);
                 return currentIterationBitmap;
@@ -169,15 +214,21 @@ namespace Logic
         {
             var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
             _lastImageBitmap.Save(pathToImage);
+
             return new AlgorithmResult()
             {
                 Iteration = _currentIteration,
                 PathToImage = pathToImage,
-                Score = GetScore(_lastImageBitmap,
+                Score = _lastScore
+            };
+        }
+
+        private void UpdateLastScore()
+        {
+            _lastScore = GetScore(_lastImageBitmap,
                          new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
                          new Point() { X = 0, Y = 0 }
-                        )
-            };
+                        );
         }
 
         private void Initialize()
@@ -195,6 +246,13 @@ namespace Logic
             _lastImageBitmap.Save($"{_pathToStorage}\\{_currentIteration}.png");
 
             initialGraphics.Dispose();
+
+            UpdateLastScore();
+        }
+
+        public int GetMaxIterations()
+        {
+            return _parameters.MaxIterations;
         }
     }
 }

@@ -27,23 +27,35 @@ namespace Logic.Models
             }
         }
         [Required]
-        [MustHaveOneElementAttribute("Select at least one shape")]
+        [MustHaveOneElement("Select at least one shape")]
         public IEnumerable<Shape>? Shapes { get; set; }
         [Required]
         public int?[]? ShapeSizeLimits { get; set; }
         public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }
         public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? 1; } }
+        //TODO: Add parameters for bezier curve
         [Required]
         public bool AllowRotation { get; set; }
         [Required]
         public bool AllowAlpha { get; set; }
+        [Range(0,1)]
+        public double UseBackgroundColorChance { get; set; }
         [Required]
         public bool UseColorDict { get; set; }
+        /// <summary>
+        /// Every how many iterations the score for the whole image should be calculated
+        /// </summary>
+        public int ScoreCalculationInterval { get; set; }
+        /// <summary>
+        /// Every how many iterations the generated image should be sent back to user
+        /// </summary>
+        public int ImagePresentationInterval { get; set; }
     }
 
     public enum Shape
     {
         Ellipse,
+        Circle,
         Rectangle,
         Triangle
     }
