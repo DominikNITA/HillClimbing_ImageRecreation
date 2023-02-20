@@ -169,8 +169,8 @@ namespace Logic
                 }
                 brush.Dispose();
 
-                var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
-                currentIterationBitmap.Save(pathToImage);
+                //var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
+                //currentIterationBitmap.Save(pathToImage);
                 return currentIterationBitmap;
             }
         }
