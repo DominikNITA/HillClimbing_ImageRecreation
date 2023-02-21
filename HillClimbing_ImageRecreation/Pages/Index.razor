@@ -35,17 +35,28 @@
 {
     <h3>Result after @_algorithmResult!.Iteration iterations</h3>
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_algorithmResult.PathToImage))">
+    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
     <span>Score: @GetScorePercentage()%</span>
 
     <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">MOOOOORE!</SfButton>
 
+    @if (_currentState == State.AlgorithmWorking)
+    {
+        <SfButton CssClass="e-info" @onclick="@(() => {
+            _currentState = State.AlgorithmStopped;
+            System.Console.WriteLine($"Cancelation requested");})">Stop!</SfButton>
+    }
+    @if (_currentState == State.AlgorithmStopped)
+    {
+        <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Resume!</SfButton>
+    }
 }
 
 @code {
     string _path = "";
     AnalysisResult? _analysisResult;
     AlgorithmResult? _algorithmResult;
+    string _pathToLatestImage;
     Algorithm? _algorithm;
     State _currentState = State.SelectingImage;
 
@@ -84,17 +95,27 @@
     {
         if (firstRender == false &&
             _algorithmResult != null &&
-            _algorithmResult.Iteration < _algorithm?.GetMaxIterations()
+            _algorithmResult.Iteration < _algorithm?.GetMaxIterations() &&
+            _currentState == State.AlgorithmWorking
         )
         {
             PerformAlgorithmCalculations();
         }
         return base.OnAfterRenderAsync(firstRender);
+
     }
 
     void PerformAlgorithmCalculations()
     {
+        _currentState = State.AlgorithmWorking;
+
         _algorithmResult = _algorithm!.CalculateNextImage();
+
+        if (_algorithmResult.PathToImage != null)
+        {
+            _pathToLatestImage = _algorithmResult.PathToImage;
+        }
+
         StateHasChanged();
     }
 

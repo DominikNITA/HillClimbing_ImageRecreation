@@ -10,6 +10,6 @@ namespace Logic.Models
     {
         public int Iteration { get; set; }
         public double Score { get; set; }
-        public string PathToImage { get; set; }
+        public string? PathToImage { get; set; }
     }
 }

@@ -35,28 +35,24 @@ namespace Logic
 
         public AlgorithmResult CalculateNextImage()
         {
-            for (int i = 0; i < _parameters.ImagePresentationInterval; i++)
+            _currentIteration++;
+            Console.WriteLine($"Calculating iteration: {_currentIteration}");
+            int attempts = 0;
+            while (NextIteration() == false)
             {
-                _currentIteration++;
-                Console.WriteLine($"Calculating iteration: {_currentIteration}");
-                int attempts = 0;
-                while (NextIteration() == false)
+                attempts++;
+                if (attempts >= 10000)
                 {
-                    attempts++;
-                    if (attempts >= 10000)
-                    {
-                        throw new Exception("Could not find better solution in 100 attempts");
-                    }
+                    throw new Exception("Could not find better solution in 100 attempts");
                 }
-                if (_currentIteration % _parameters.ScoreCalculationInterval == 0)
-                {
-                    UpdateLastScore();
-                }
-                if (_currentIteration >= _parameters.MaxIterations)
-                {
-                    UpdateLastScore();
-                    break;
-                }
+            }
+            if (_currentIteration % _parameters.ScoreCalculationInterval == 0)
+            {
+                UpdateLastScore();
+            }
+            if (_currentIteration >= _parameters.MaxIterations)
+            {
+                UpdateLastScore();
             }
 
             return CalculateResult();
@@ -213,7 +209,15 @@ namespace Logic
         private AlgorithmResult CalculateResult()
         {
             var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
-            _lastImageBitmap.Save(pathToImage);
+            if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
+                _currentIteration < 20)
+            {
+                _lastImageBitmap.Save(pathToImage);
+            }
+            else
+            {
+                pathToImage = null;
+            }
 
             return new AlgorithmResult()
             {
@@ -238,7 +242,6 @@ namespace Logic
 
             Graphics initialGraphics = Graphics.FromImage(_lastImageBitmap);
             initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
-            initialGraphics.FillEllipse(new SolidBrush(Color.GreenYellow), 150, 250, 30, 60);
 
             _pathToStorage = Path.Combine(_pathToStorage, DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString());
             Directory.CreateDirectory(_pathToStorage);
