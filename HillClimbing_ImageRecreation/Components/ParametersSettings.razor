@@ -4,18 +4,18 @@
 
 <h3>Parameter Settings</h3>
 
-<EditForm Model="@parametersModel" OnValidSubmit="@HandleValidSubmit">
+<EditForm Model="@_parametersModel" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <Row>
         <Column Size="3">
             <label class="form-label">Used shapes:</label>
-            <EnumCheckBoxGroup TEnum="Shape" AllInitiallySelected="true" OnChangeCallback="@((x) => parametersModel.Shapes = x)"></EnumCheckBoxGroup>
+            <EnumCheckBoxGroup TEnum="Shape" AllInitiallySelected="true" OnChangeCallback="@((x) => _parametersModel.Shapes = x)"></EnumCheckBoxGroup>
         </Column>
         <Column Size="9">
-            <label class="form-label">Shape size limits[px]: [@parametersModel.MinShapeSize, @parametersModel.MaxShapeSize]</label>
-            <SfSlider @bind-Value="parametersModel.ShapeSizeLimits"
+            <label class="form-label">Shape size limits[px]: [@_parametersModel.MinShapeSize, @_parametersModel.MaxShapeSize]</label>
+            <SfSlider @bind-Value="_parametersModel.ShapeSizeLimits"
                       Type="SliderType.Range"
                       Min="0"
                       Max="GetMaxShapeLimit()">
@@ -32,21 +32,23 @@
                 <SfColorPicker ModeSwitcher="false"
                                ShowButtons="false"
                                ValueChanged="@OnColorChanged"
-                               Value="@parametersModel.BackgroundColorString" />
+                               Value="@_parametersModel.BackgroundColorString"
+                               Disabled=@(_previousBackgroundColorString != null) />
+                <SfCheckBox TChecked="bool" @onchange="onUseTransparentColorChange">Use transparent background</SfCheckBox>
             </Row>
         </Column>
         <Column Size="4">
             <label class="form-label">Max iterations:</label>
-            <SfNumericTextBox TValue="int" Min="100" Max="20000" Step="100" Format="#####" @bind-Value=@parametersModel.MaxIterations></SfNumericTextBox>
+            <SfNumericTextBox TValue="int" Min="100" Max="20000" Step="100" Format="#####" @bind-Value=@_parametersModel.MaxIterations></SfNumericTextBox>
         </Column>
     </Row>
     <Row>
         <label class="form-label">Other settings:</label>
         <Column Size="4">
-            <SfCheckBox @bind-Checked="@parametersModel.AllowRotation" Disabled>Allow rotation (WIP)</SfCheckBox>
+            <SfCheckBox @bind-Checked="@_parametersModel.AllowRotation" Disabled>Allow rotation (WIP)</SfCheckBox>
         </Column>
         <Column Size="4">
-            <SfCheckBox @bind-Checked="@parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
+            <SfCheckBox @bind-Checked="@_parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
         </Column>
         <Column Size="4">
             <SfCheckBox TChecked="bool" Disabled>Use Color Dictionary (WIP)</SfCheckBox>
@@ -56,7 +58,8 @@
 </EditForm>
 
 @code {
-    private AlgorithmParameters parametersModel = new();
+    private AlgorithmParameters _parametersModel = new();
+    private string? _previousBackgroundColorString;
 
     [Parameter]
     public EventCallback<AlgorithmParameters> OnAlgorithmParametersSet { get; set; }
@@ -66,13 +69,13 @@
 
     protected override void OnParametersSet()
     {
-        parametersModel.ShapeSizeLimits = new int?[] { 1, GetMaxShapeLimit() };
-        parametersModel.BackgroundColorString = "#e1d9d9ff";
-        parametersModel.MaxIterations = 1000;
-        parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
-        parametersModel.ScoreCalculationInterval = 20;
-        parametersModel.ImagePresentationInterval = 10;
-        parametersModel.UseBackgroundColorChance = 0.025;
+        _parametersModel.ShapeSizeLimits = new int?[] { 1, GetMaxShapeLimit() };
+        _parametersModel.BackgroundColorString = "#e1d9d9ff";
+        _parametersModel.MaxIterations = 1000;
+        _parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
+        _parametersModel.ScoreCalculationInterval = 20;
+        _parametersModel.ImagePresentationInterval = 10;
+        _parametersModel.UseBackgroundColorChance = 0.025;
     }
 
     private int GetMaxShapeLimit()
@@ -82,12 +85,26 @@
 
     private async void HandleValidSubmit()
     {
-        System.Console.WriteLine(parametersModel.PropertiesToString());
-        await OnAlgorithmParametersSet.InvokeAsync(parametersModel);
+        System.Console.WriteLine(_parametersModel.PropertiesToString());
+        await OnAlgorithmParametersSet.InvokeAsync(_parametersModel);
     }
 
     public void OnColorChanged(string value)
     {
-        parametersModel.BackgroundColorString = value;
+        _parametersModel.BackgroundColorString = value;
+    }
+
+    private void onUseTransparentColorChange(ChangeEventArgs args)
+    {
+        if ((bool)(args.Value ?? false))
+        {
+            _previousBackgroundColorString = _parametersModel.BackgroundColorString;
+            _parametersModel.BackgroundColorString = "#00000000";
+        }
+        else
+        {
+            _parametersModel.BackgroundColorString = _previousBackgroundColorString ?? string.Empty;
+            _previousBackgroundColorString = null;
+        }
     }
 }
