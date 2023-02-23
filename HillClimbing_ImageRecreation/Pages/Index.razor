@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject IWebHostEnvironment Environment
+@using Syncfusion.Blazor.Charts
 
 <PageTitle>Hill Climbing Algorithm</PageTitle>
 
@@ -12,7 +13,7 @@
 {
     <div>
         Upload image to start:
-        <InputFile OnChange="@LoadFiles" multiple />
+        <InputFile OnChange="@LoadFiles" />
     </div>
 }
 
@@ -31,14 +32,31 @@
     </Row>
 }
 
-@if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped)
+@if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped or State.AlgorithmFinished)
 {
-    <h3>Result after @_algorithmResult!.Iteration iterations</h3>
+    <h3>Result after @_algorithmResult.LastOrDefault()?.Iteration iterations</h3>
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
-    <span>Score: @GetScorePercentage()%</span>
+    <div>Score: @GetScorePercentage(_algorithmResult.Where(r => r.Score != null).LastOrDefault()?.Score ?? 1)%</div>
 
-    <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">MOOOOORE!</SfButton>
+    <SfChart Title="Score" Width="60%">
+        <ChartPrimaryXAxis IntervalType="IntervalType.Auto"
+                       ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
+        </ChartPrimaryXAxis>
+        <ChartPrimaryYAxis Interval="10"
+                       Maximum="100"
+                       Minimum=@(Math.Floor(GetScorePercentage(_algorithmResult.First().Score ?? int.MaxValue)/10)*10)
+                       RangePadding="ChartRangePadding.Round"
+                       LabelFormat="{value}%">
+        </ChartPrimaryYAxis>
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@_algorithmResult.Where(r => r.Score != null).Select(r => new ChartData() {
+XValue = r.Iteration,
+YValue = GetScorePercentage(r.Score ?? 1)
+})" XName="XValue" YName="YValue" Type="ChartSeriesType.Line">
+            </ChartSeries>
+        </ChartSeriesCollection>
+    </SfChart>
 
     @if (_currentState == State.AlgorithmWorking)
     {
@@ -50,19 +68,30 @@
     {
         <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Resume!</SfButton>
     }
+    @if (_currentState == State.AlgorithmFinished)
+    {
+        <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">MOOOOORE!</SfButton>
+    }
 }
 
 @code {
     string _path = "";
     AnalysisResult? _analysisResult;
-    AlgorithmResult? _algorithmResult;
+    List<AlgorithmResult> _algorithmResult = new();
     string _pathToLatestImage;
     Algorithm? _algorithm;
     State _currentState = State.SelectingImage;
 
+    public class ChartData
+    {
+        public int XValue { get; set; }
+        public double YValue { get; set; }
+    }
+
     private async void LoadFiles(InputFileChangeEventArgs e)
     {
         _analysisResult = null;
+        _algorithmResult = new();
         var trustedFileNameForFileStorage = Path.GetRandomFileName();
         trustedFileNameForFileStorage = trustedFileNameForFileStorage.Substring(0, trustedFileNameForFileStorage.LastIndexOf('.')) + e.File.Name.Substring(e.File.Name.LastIndexOf('.'));
 
@@ -94,12 +123,17 @@
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender == false &&
-            _algorithmResult != null &&
-            _algorithmResult.Iteration < _algorithm?.GetMaxIterations() &&
             _currentState == State.AlgorithmWorking
         )
         {
-            PerformAlgorithmCalculations();
+            if (_algorithmResult.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
+            {
+                PerformAlgorithmCalculations();
+            }
+            else
+            {
+                _currentState = State.AlgorithmFinished;
+            }
         }
         return base.OnAfterRenderAsync(firstRender);
 
@@ -109,19 +143,21 @@
     {
         _currentState = State.AlgorithmWorking;
 
-        _algorithmResult = _algorithm!.CalculateNextImage();
+        var result = _algorithm!.CalculateNextImage();
 
-        if (_algorithmResult.PathToImage != null)
+        if (result.PathToImage != null)
         {
-            _pathToLatestImage = _algorithmResult.PathToImage;
+            _pathToLatestImage = result.PathToImage;
         }
+
+        _algorithmResult.Add(result);
 
         StateHasChanged();
     }
 
-    double? GetScorePercentage()
+    double GetScorePercentage(double score)
     {
-        return (1 - ((double)_algorithmResult!.Score) / (_analysisResult?.Width * _analysisResult?.Height * 4)) * 100;
+        return (1 - (score) / (_analysisResult!.Width * _analysisResult!.Height * 4)) * 100;
     }
 
     enum State

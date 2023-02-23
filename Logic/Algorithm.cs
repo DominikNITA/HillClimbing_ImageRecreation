@@ -46,14 +46,6 @@ namespace Logic
                     throw new Exception("Could not find better solution in 100 attempts");
                 }
             }
-            if (_currentIteration % _parameters.ScoreCalculationInterval == 0)
-            {
-                UpdateLastScore();
-            }
-            if (_currentIteration >= _parameters.MaxIterations)
-            {
-                UpdateLastScore();
-            }
 
             return CalculateResult();
         }
@@ -208,6 +200,11 @@ namespace Logic
 
         private AlgorithmResult CalculateResult()
         {
+            if (_currentIteration >= _parameters.MaxIterations)
+            {
+                UpdateLastScore();
+            }
+
             var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
             if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
                 _currentIteration < 20)
@@ -219,11 +216,23 @@ namespace Logic
                 pathToImage = null;
             }
 
+            double? lastScore;
+            if(_currentIteration % _parameters.ScoreCalculationInterval == 0 ||
+                _currentIteration < 20)
+            {
+                UpdateLastScore();
+                lastScore = _lastScore;
+            }
+            else
+            {
+                lastScore = null;
+            }
+
             return new AlgorithmResult()
             {
                 Iteration = _currentIteration,
                 PathToImage = pathToImage,
-                Score = _lastScore
+                Score = lastScore
             };
         }
 
