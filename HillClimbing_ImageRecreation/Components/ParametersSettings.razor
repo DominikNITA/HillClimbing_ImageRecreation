@@ -2,61 +2,65 @@
 @using Syncfusion.Blazor.Inputs
 @using System.Drawing
 
-<h3>Parameter Settings</h3>
+<SfCard>
+    <CardHeader Title="Algorithm parameters" />
+    <EditForm Model="@_parametersModel" OnValidSubmit="@HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-<EditForm Model="@_parametersModel" OnValidSubmit="@HandleValidSubmit">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <Row>
-        <Column Size="3">
-            <label class="form-label">Used shapes:</label>
-            <EnumCheckBoxGroup TEnum="Shape" AllInitiallySelected="true" OnChangeCallback="@((x) => _parametersModel.Shapes = x)"></EnumCheckBoxGroup>
-        </Column>
-        <Column Size="9">
-            <label class="form-label">Shape size limits[px]: [@_parametersModel.MinShapeSize, @_parametersModel.MaxShapeSize]</label>
-            <SfSlider @bind-Value="_parametersModel.ShapeSizeLimits"
-                      Type="SliderType.Range"
-                      Min="0"
-                      Max="GetMaxShapeLimit()">
-                <SliderTicks Placement="Placement.After" ShowSmallTicks="true" LargeStep="GetMaxShapeLimit()/10 - GetMaxShapeLimit()%10" SmallStep="1"></SliderTicks>
-                <SliderTooltip IsVisible="true" ShowOn="TooltipShowOn.Always" Placement="TooltipPlacement.Before"></SliderTooltip>
-                <SliderLimits MinStart="1" Enabled="true"></SliderLimits>
-            </SfSlider>
-        </Column>
-    </Row>
-    <Row>
-        <Column Size="6">
-            <label class="form-label">Starting Background Color:</label>
-            <Row>
-                <SfColorPicker ModeSwitcher="false"
-                               ShowButtons="false"
-                               ValueChanged="@OnColorChanged"
-                               Value="@_parametersModel.BackgroundColorString"
-                               Disabled=@(_previousBackgroundColorString != null) />
-                <SfCheckBox TChecked="bool" @onchange="onUseTransparentColorChange">Use transparent background</SfCheckBox>
-            </Row>
-        </Column>
-        <Column Size="4">
-            <label class="form-label">Max iterations:</label>
-            <SfNumericTextBox TValue="int" Min="100" Max="20000" Step="100" Format="#####" @bind-Value=@_parametersModel.MaxIterations></SfNumericTextBox>
-        </Column>
-    </Row>
-    <Row>
-        <label class="form-label">Other settings:</label>
-        <Column Size="4">
-            <SfCheckBox @bind-Checked="@_parametersModel.AllowRotation" Disabled>Allow rotation (WIP)</SfCheckBox>
-        </Column>
-        <Column Size="4">
-            <SfCheckBox @bind-Checked="@_parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
-        </Column>
-        <Column Size="4">
-            <SfCheckBox TChecked="bool" Disabled>Use Color Dictionary (WIP)</SfCheckBox>
-        </Column>
-    </Row>
-    <SfButton type="submit">Submit</SfButton>
-</EditForm>
-
+        <Row>
+            <Column Size="3">
+                <label class="form-label">Used shapes:</label>
+                <EnumCheckBoxGroup TEnum="Shape" AllInitiallySelected="true" OnChangeCallback="@((x) => _parametersModel.Shapes = x)"></EnumCheckBoxGroup>
+            </Column>
+            <Column Size="9">
+                <label class="form-label">Shape size limits[px]: [@_parametersModel.MinShapeSize, @_parametersModel.MaxShapeSize]</label>
+                <SfSlider @bind-Value="_parametersModel.ShapeSizeLimits"
+                          Type="SliderType.Range"
+                          Min="0"
+                          Max="GetMaxShapeLimit()">
+                    <SliderTicks Placement="Placement.After" ShowSmallTicks="true" LargeStep="GetMaxShapeLimit()/10 - GetMaxShapeLimit()%10" SmallStep="1"></SliderTicks>
+                    <SliderTooltip IsVisible="true" ShowOn="TooltipShowOn.Always" Placement="TooltipPlacement.Before"></SliderTooltip>
+                    <SliderLimits MinStart="1" Enabled="true"></SliderLimits>
+                </SfSlider>
+            </Column>
+        </Row>
+        <Row>
+            <Column Size="6">
+                <label class="form-label">Starting Background Color:</label>
+                <Row>
+                    <Column Size="4">
+                        <SfColorPicker ModeSwitcher="false"
+                                       ShowButtons="false"
+                                       ValueChanged="@OnColorChanged"
+                                       Value="@_parametersModel.BackgroundColorString"
+                                       Disabled=@(_previousBackgroundColorString != null) />
+                    </Column>
+                    <Column Size="8">
+                        <SfCheckBox TChecked="bool" @onchange="onUseTransparentColorChange">Use transparent color</SfCheckBox>
+                    </Column>
+                </Row>
+            </Column>
+            <Column Size="4">
+                <label class="form-label">Max iterations:</label>
+                <SfNumericTextBox TValue="int" Min="100" Max="20000" Step="100" Format="#####" @bind-Value=@_parametersModel.MaxIterations></SfNumericTextBox>
+            </Column>
+        </Row>
+        <Row>
+            <label class="form-label">Other settings:</label>
+            <Column Size="4">
+                <SfCheckBox @bind-Checked="@_parametersModel.AllowRotation" Disabled>Allow rotation (WIP)</SfCheckBox>
+            </Column>
+            <Column Size="4">
+                <SfCheckBox @bind-Checked="@_parametersModel.AllowAlpha">Allow Alpha</SfCheckBox>
+            </Column>
+            <Column Size="4">
+                <SfCheckBox TChecked="bool" Disabled>Use Color Dictionary (WIP)</SfCheckBox>
+            </Column>
+        </Row>
+        <SfButton type="submit">Start!</SfButton>
+    </EditForm>
+</SfCard>
 @code {
     private AlgorithmParameters _parametersModel = new();
     private string? _previousBackgroundColorString;
@@ -73,7 +77,6 @@
         _parametersModel.BackgroundColorString = "#e1d9d9ff";
         _parametersModel.MaxIterations = 1000;
         _parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
-        _parametersModel.ScoreCalculationInterval = 20;
         _parametersModel.ImagePresentationInterval = 10;
         _parametersModel.UseBackgroundColorChance = 0.025;
     }

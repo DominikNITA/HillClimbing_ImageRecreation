@@ -42,12 +42,9 @@ namespace Logic.Models
         public double UseBackgroundColorChance { get; set; }
         [Required]
         public bool UseColorDict { get; set; }
+
         /// <summary>
-        /// Every how many iterations the score for the whole image should be calculated
-        /// </summary>
-        public int ScoreCalculationInterval { get; set; }
-        /// <summary>
-        /// Every how many iterations the generated image should be sent back to user
+        /// Every how many iterations the generated image should be saved and sent back to user
         /// </summary>
         public int ImagePresentationInterval { get; set; }
     }

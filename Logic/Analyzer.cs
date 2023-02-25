@@ -26,7 +26,10 @@ namespace Logic
                 for (int j = 0; j < bitmap.Height; j++)
                 {
                     var pixel = bitmap.GetPixel(i, j);
-                    colors.Add(pixel.ToArgb());                    
+                    if (pixel.A > 0) // Only consider colors that are not fully transparent
+                    {
+                        colors.Add(Color.FromArgb(0, pixel).ToArgb()); // Ignore alpha component                   
+                    }
                 }
             }
             return colors.Distinct().Count();

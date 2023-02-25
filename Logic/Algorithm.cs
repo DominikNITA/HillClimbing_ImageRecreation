@@ -58,9 +58,12 @@ namespace Logic
             Color shapeColor = GetRandomShapeColor();
 
             Bitmap currentIterationBitmap = DrawShape(shapeToDraw, shapeSize, shapePosition, shapeColor);
-            if (CompareScores(currentIterationBitmap, _lastImageBitmap, shapeSize, shapePosition) < 0)
+
+            var scoreDifference = CompareScores(currentIterationBitmap, _lastImageBitmap, shapeSize, shapePosition);
+            if (scoreDifference < 0)
             {
                 _lastImageBitmap = currentIterationBitmap;
+                _lastScore += scoreDifference;
                 return true;
             }
             currentIterationBitmap.Dispose();
@@ -200,10 +203,10 @@ namespace Logic
 
         private AlgorithmResult CalculateResult()
         {
-            if (_currentIteration >= _parameters.MaxIterations)
-            {
-                UpdateLastScore();
-            }
+            //if (_currentIteration >= _parameters.MaxIterations)
+            //{
+            //    UpdateLastScore();
+            //}
 
             var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
             if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
@@ -215,33 +218,13 @@ namespace Logic
             {
                 pathToImage = null;
             }
-
-            double? lastScore;
-            if(_currentIteration % _parameters.ScoreCalculationInterval == 0 ||
-                _currentIteration < 20)
-            {
-                UpdateLastScore();
-                lastScore = _lastScore;
-            }
-            else
-            {
-                lastScore = null;
-            }
-
+            Console.WriteLine(_lastScore);
             return new AlgorithmResult()
             {
                 Iteration = _currentIteration,
                 PathToImage = pathToImage,
-                Score = lastScore
+                Score = _lastScore
             };
-        }
-
-        private void UpdateLastScore()
-        {
-            _lastScore = GetScore(_lastImageBitmap,
-                         new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
-                         new Point() { X = 0, Y = 0 }
-                        );
         }
 
         private void Initialize()
@@ -259,7 +242,10 @@ namespace Logic
 
             initialGraphics.Dispose();
 
-            UpdateLastScore();
+            _lastScore = GetScore(_lastImageBitmap,
+             new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
+             new Point() { X = 0, Y = 0 }
+            );
         }
 
         public int GetMaxIterations()
