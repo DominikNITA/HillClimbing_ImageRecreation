@@ -106,10 +106,17 @@ namespace Logic
             var targetPixel = _targetImageBitmap.GetPixel(x, y);
             double score = 0;
 
-            // If both pixels are completly transparent we don't compare other colors
-            if (targetPixel.A == 0 && pixelColor.A == 0)
+            if (targetPixel.A == 0)
             {
-                return 0;
+                // If both pixels are completly transparent we don't compare other colors
+                if (pixelColor.A == 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
+                }
             }
             score += Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
             score += Math.Abs((targetPixel.R - pixelColor.R) / (double)255);
@@ -246,6 +253,8 @@ namespace Logic
              new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
              new Point() { X = 0, Y = 0 }
             );
+
+            new VideoGenerator().Test();
         }
 
         public int GetMaxIterations()

@@ -8,7 +8,8 @@
 }
 
 @code {
-    [Parameter] public bool AllInitiallySelected { get; set; } = false;
+    [Parameter] 
+    public bool AllInitiallySelected { get; set; } = false;
 
     [Parameter]
     public EventCallback<IEnumerable<TEnum>> OnChangeCallback { get; set; }
