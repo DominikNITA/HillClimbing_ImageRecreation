@@ -1,4 +1,5 @@
-﻿using Logic.Models;
+﻿using Logic.Helpers;
+using Logic.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,7 +13,6 @@ namespace Logic
     public class Algorithm
     {
         AlgorithmParameters _parameters;
-        string _pathToStorage;
 
         string _pathToTargetImage;
         Bitmap _targetImageBitmap;
@@ -24,11 +24,13 @@ namespace Logic
         int _currentIteration = 0;
 
         Random _random;
+
+        public string Id { get; private set; }
+
         public Algorithm(AlgorithmParameters parameters, string pathToTargetImage, string pathToStorage)
         {
             _parameters = parameters;
             _pathToTargetImage = pathToTargetImage;
-            _pathToStorage = pathToStorage;
             _random = new Random();
             Initialize();
         }
@@ -215,7 +217,7 @@ namespace Logic
             //    UpdateLastScore();
             //}
 
-            var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
+            var pathToImage = StorageHelper.GetPathForIterationImage(Id, _currentIteration);
             if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
                 _currentIteration < 20)
             {
@@ -242,10 +244,9 @@ namespace Logic
             Graphics initialGraphics = Graphics.FromImage(_lastImageBitmap);
             initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
 
-            _pathToStorage = Path.Combine(_pathToStorage, DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_pathToStorage);
-
-            _lastImageBitmap.Save($"{_pathToStorage}\\{_currentIteration}.png");
+            Id = DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString();
+            Directory.CreateDirectory(StorageHelper.GetPathForIterationsFolderById(Id));
+            _lastImageBitmap.Save(StorageHelper.GetPathForIterationImage(Id, _currentIteration));
 
             initialGraphics.Dispose();
 
@@ -253,8 +254,6 @@ namespace Logic
              new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
              new Point() { X = 0, Y = 0 }
             );
-
-            new VideoGenerator().Test();
         }
 
         public int GetMaxIterations()

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Logic.Helpers;
 
 namespace Logic
 {
@@ -19,10 +20,10 @@ namespace Logic
             GlobalFFOptions.Configure(new FFOptions { BinaryFolder = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/FFMPEG" });
         }
 
-        public async void Test()
+        public async Task GenerateTimelapseVideo(string id)
         {
-            var files = System.IO.Directory.GetFiles($"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/FFMPEG");
-            foreach (var file in files)
+            var images = Directory.GetFiles(StorageHelper.GetPathForIterationsFolderById(id));
+            foreach (var file in images)
             {
                 Console.WriteLine(file);
             }
@@ -31,26 +32,23 @@ namespace Logic
             {
                 for (int i = 0; i < count; i++)
                 {
-                    var bitmap = new Bitmap("E:\\Programming\\HillClimbingAlgorithm\\HillClimbing_ImageRecreation\\Development\\638129245868643809bb279d37-de37-4196-8932-01fde27e61ff\\10.png");
+                    var bitmap = new Bitmap(images[i]);
                     yield return new BitmapVideoFrameWrapper(bitmap); //method that generates of receives the next frame
                 }
             }
 
-            var videoFramesSource = new RawVideoPipeSource(CreateFrames(64))
+            var videoFramesSource = new RawVideoPipeSource(CreateFrames(images.Length))
             {
-                FrameRate = 8 //set source frame rate
+                FrameRate = 10 // add as parameter
             };
 
             await FFMpegArguments
             .FromPipeInput(videoFramesSource)
-            .OutputToFile("T:\\HCA\\test.mp4", true)
+            .OutputToFile(StorageHelper.GetPathForTimelapseFile(id), true)
             .ProcessAsynchronously();
 
-            FFMpeg.JoinImageSequence(@"T:\HCA\joined_video.mp4", frameRate: 1,
-                "E:\\Programming\\HillClimbingAlgorithm\\HillClimbing_ImageRecreation\\Development\\638129245868643809bb279d37-de37-4196-8932-01fde27e61ff\\1.png",
-                "E:\\Programming\\HillClimbingAlgorithm\\HillClimbing_ImageRecreation\\Development\\638129245868643809bb279d37-de37-4196-8932-01fde27e61ff\\10.png",
-                "E:\\Programming\\HillClimbingAlgorithm\\HillClimbing_ImageRecreation\\Development\\638129245868643809bb279d37-de37-4196-8932-01fde27e61ff\\20.png"
-);
+            //FFMpeg.JoinImageSequence(StorageHelper.GetPathForTimelapseFile(id) + "sq", frameRate: 2,
+            //    images);
         }
     }
 }

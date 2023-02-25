@@ -70,7 +70,9 @@ YValue = GetScorePercentage(r.Score ?? 1)
     }
     @if (_currentState == State.AlgorithmFinished)
     {
-        <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">MOOOOORE!</SfButton>
+        <SfButton CssClass="e-info" @onclick="@(async () => {
+            await (new VideoGenerator().GenerateTimelapseVideo(_algorithm.Id));
+            })">Render timelapse!</SfButton>
     }
 }
 
@@ -92,12 +94,9 @@ YValue = GetScorePercentage(r.Score ?? 1)
     {
         _analysisResult = null;
         _algorithmResult = new();
-        var trustedFileNameForFileStorage = Path.GetRandomFileName();
-        trustedFileNameForFileStorage = trustedFileNameForFileStorage.Substring(0, trustedFileNameForFileStorage.LastIndexOf('.')) + e.File.Name.Substring(e.File.Name.LastIndexOf('.'));
 
-        _path = Path.Combine(Environment.ContentRootPath,
-                        Environment.EnvironmentName, "unsafe_uploads",
-                        trustedFileNameForFileStorage);
+        var trustedFileNameForFileStorage = StorageHelper.CreateRandomFileNameWithExtension(e.File.Name);
+        _path = StorageHelper.GetPathForFileInUnsafeUploads(trustedFileNameForFileStorage);
 
         using (FileStream fs = new(_path, FileMode.Create))
         {
@@ -113,9 +112,7 @@ YValue = GetScorePercentage(r.Score ?? 1)
 
     void CreateAlgorithm(AlgorithmParameters algorithmParameters)
     {
-        _algorithm = new Algorithm(algorithmParameters, _path,
-                Path.Combine(Environment.ContentRootPath,
-                Environment.EnvironmentName));
+        _algorithm = new Algorithm(algorithmParameters, _path, StorageHelper.GlobalFolderPath);
         _currentState = State.AlgorithmWorking;
         PerformAlgorithmCalculations();
     }
@@ -133,6 +130,7 @@ YValue = GetScorePercentage(r.Score ?? 1)
             else
             {
                 _currentState = State.AlgorithmFinished;
+                StateHasChanged();
             }
         }
         return base.OnAfterRenderAsync(firstRender);
@@ -167,6 +165,7 @@ YValue = GetScorePercentage(r.Score ?? 1)
         SettingParameters,
         AlgorithmWorking,
         AlgorithmStopped,
-        AlgorithmFinished
+        AlgorithmFinished,
+        TimelapseGenerated
     }
 }

@@ -5,7 +5,7 @@
 @code {
     void ClearData()
     {
-        var directoryToClear = new DirectoryInfo(Path.Combine(Environment.ContentRootPath,Environment.EnvironmentName));
+        var directoryToClear = new DirectoryInfo(StorageHelper.GlobalFolderPath);
 
         foreach (FileInfo file in directoryToClear.GetFiles())
         {
@@ -15,6 +15,8 @@
         {
             dir.Delete(true); 
         }
-        directoryToClear.CreateSubdirectory("unsafe_uploads");
+        string directoryToCreate = StorageHelper.UnsafeUploadsPath;
+        System.Console.WriteLine(directoryToCreate);
+        Directory.CreateDirectory(StorageHelper.UnsafeUploadsPath);
     }
 }
