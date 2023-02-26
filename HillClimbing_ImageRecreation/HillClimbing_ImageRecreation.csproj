@@ -16,4 +16,8 @@
     <PackageReference Include="Syncfusion.Blazor" Version="20.3.0.56" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\algorithm-data\" />
+  </ItemGroup>
+
 </Project>

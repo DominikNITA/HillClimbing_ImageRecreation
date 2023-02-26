@@ -9,14 +9,12 @@ namespace Logic.Helpers
 {
     public class StorageHelper
     {
-        const string GlobalFolderName = "content";
+        const string GlobalFolderName = "algorithm-data";
         const string UnsafeUploadsName = "unsafe_uploads";
         const string GeneratedImagesFolderName = "iterations";
         const string GeneratedVideoFileNamePrefix = "timelapse-";
 
-        public static readonly string GlobalFolderPath = Path.Combine(
-            Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-            GlobalFolderName);
+        public static readonly string GlobalFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", GlobalFolderName);
 
         public static readonly string UnsafeUploadsPath = Path.Combine(
            GlobalFolderPath,
@@ -65,6 +63,11 @@ namespace Logic.Helpers
                 GetPathForFolderById(id),
                 $"{GeneratedVideoFileNamePrefix}{id}.{extension}"
                 );
+        }
+
+        static public string ConvertPathToRelativeToWwwroot(string path)
+        {
+            return path.Substring(path.LastIndexOf(GlobalFolderName));
         }
     }
 }

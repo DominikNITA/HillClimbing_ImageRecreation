@@ -77,8 +77,8 @@ YValue = GetScorePercentage(r.Score ?? 1)
 
         if (_pathToLatestTimeLapse != null)
         {
-            <video width="@_analysisResult.Width" height="@_analysisResult.Height" autoplay loop controls>
-                <source src="@_pathToLatestTimeLapse" type="video/mp4">
+            <video width="@_analysisResult.Width" height="@_analysisResult.Height" autoplay controls>
+                <source src="@StorageHelper.ConvertPathToRelativeToWwwroot(_pathToLatestTimeLapse)" type="video/mp4">
             </video>
         }
     }
