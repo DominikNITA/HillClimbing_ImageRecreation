@@ -12,7 +12,7 @@
 @if (_currentState is State.SelectingImage or State.SettingParameters)
 {
     <SfCard>
-        <CardHeader Title="Upload image to start:"  />
+        <CardHeader Title="Upload image to start:" />
         <InputFile OnChange="@LoadFiles" />
     </SfCard>
 }
@@ -71,8 +71,16 @@ YValue = GetScorePercentage(r.Score ?? 1)
     @if (_currentState == State.AlgorithmFinished)
     {
         <SfButton CssClass="e-info" @onclick="@(async () => {
-            await (new VideoGenerator().GenerateTimelapseVideo(_algorithm.Id));
+           _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm.Id));
+           StateHasChanged();
             })">Render timelapse!</SfButton>
+
+        if (_pathToLatestTimeLapse != null)
+        {
+            <video width="@_analysisResult.Width" height="@_analysisResult.Height" autoplay loop controls>
+                <source src="@_pathToLatestTimeLapse" type="video/mp4">
+            </video>
+        }
     }
 }
 
@@ -80,7 +88,8 @@ YValue = GetScorePercentage(r.Score ?? 1)
     string _path = "";
     AnalysisResult? _analysisResult;
     List<AlgorithmResult> _algorithmResult = new();
-    string _pathToLatestImage;
+    string? _pathToLatestImage;
+    string? _pathToLatestTimeLapse;
     Algorithm? _algorithm;
     State _currentState = State.SelectingImage;
 

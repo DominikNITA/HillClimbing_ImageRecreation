@@ -20,7 +20,7 @@ namespace Logic
             GlobalFFOptions.Configure(new FFOptions { BinaryFolder = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/FFMPEG" });
         }
 
-        public async Task GenerateTimelapseVideo(string id)
+        public async Task<string> GenerateTimelapseVideo(string id)
         {
             var images = Directory.GetFiles(StorageHelper.GetPathForIterationsFolderById(id));
             foreach (var file in images)
@@ -47,6 +47,7 @@ namespace Logic
             .OutputToFile(StorageHelper.GetPathForTimelapseFile(id), true)
             .ProcessAsynchronously();
 
+            return StorageHelper.GetPathForTimelapseFile(id);
             //FFMpeg.JoinImageSequence(StorageHelper.GetPathForTimelapseFile(id) + "sq", frameRate: 2,
             //    images);
         }
