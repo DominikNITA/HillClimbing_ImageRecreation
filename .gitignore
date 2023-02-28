@@ -400,3 +400,5 @@ FodyWeavers.xsd
 
 HillClimbing_ImageRecreation/Development
 /HillClimbing_ImageRecreation/wwwroot/algorithm-data
+/Logic/FFMPEG/ffmpeg.exe
+/Logic/FFMPEG/ffprobe.exe

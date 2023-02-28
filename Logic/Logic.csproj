@@ -13,12 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="FFMPEG\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="FFMPEG\ffmpeg.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="FFMPEG\ffprobe.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
