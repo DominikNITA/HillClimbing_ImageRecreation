@@ -1,6 +1,5 @@
 ﻿@page "/"
 @inject IWebHostEnvironment Environment
-@using Syncfusion.Blazor.Charts
 
 <PageTitle>Hill Climbing Algorithm</PageTitle>
 
@@ -11,25 +10,25 @@
 
 @if (_currentState is State.SelectingImage or State.SettingParameters)
 {
-    <SfCard>
-        <CardHeader Title="Upload image to start:" />
+    <div>
+        Upload image to start:
         <InputFile OnChange="@LoadFiles" />
-    </SfCard>
+    </div>
 }
 
 
 @if (_currentState is State.SettingParameters)
 {
-    <Row>
-        <Column Size="6">
+    <GridRow>
+        <GridCol Span="12">
             <h3>Uploaded image:</h3>
             <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-        </Column>
-        <Column Size="6">
+        </GridCol>
+        <GridCol Span="12">
             <AnalysisResultPreview Analysis="@_analysisResult"></AnalysisResultPreview>
             <ParametersSettings Analysis="@_analysisResult" OnAlgorithmParametersSet="@CreateAlgorithm"></ParametersSettings>
-        </Column>
-    </Row>
+        </GridCol>
+    </GridRow>
 }
 
 @if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped or State.AlgorithmFinished)
@@ -39,41 +38,45 @@
     <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
     <div>Score: @GetScorePercentage(_algorithmResult.Where(r => r.Score != null).LastOrDefault()?.Score ?? 1)%</div>
 
-    <SfChart Title="Score" Width="60%">
+    @*    <SfChart Title="Score" Width="60%">
         <ChartPrimaryXAxis IntervalType="IntervalType.Auto"
-                       ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
+        ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
         </ChartPrimaryXAxis>
         <ChartPrimaryYAxis Interval="10"
-                       Maximum="100"
-                       Minimum=@(Math.Floor(GetScorePercentage(_algorithmResult.First().Score ?? int.MaxValue)/10)*10)
-                       RangePadding="ChartRangePadding.Round"
-                       LabelFormat="{value}%">
+        Maximum="100"
+        Minimum=@(Math.Floor(GetScorePercentage(_algorithmResult.First().Score ?? int.MaxValue)/10)*10)
+        RangePadding="ChartRangePadding.Round"
+        LabelFormat="{value}%">
         </ChartPrimaryYAxis>
         <ChartSeriesCollection>
-            <ChartSeries DataSource="@_algorithmResult.Where(r => r.Score != null).Select(r => new ChartData() {
-XValue = r.Iteration,
-YValue = GetScorePercentage(r.Score ?? 1)
-})" XName="XValue" YName="YValue" Type="ChartSeriesType.Line">
-            </ChartSeries>
+        <ChartSeries DataSource="@_algorithmResult.Where(r => r.Score != null).Select(r => new ChartData() {
+        XValue = r.Iteration,
+        YValue = GetScorePercentage(r.Score ?? 1)
+        })" XName="XValue" YName="YValue" Type="ChartSeriesType.Line">
+        </ChartSeries>
         </ChartSeriesCollection>
-    </SfChart>
+        </SfChart>*@
 
     @if (_currentState == State.AlgorithmWorking)
     {
-        <SfButton CssClass="e-info" @onclick="@(() => {
+        <Button @onclick="@(() => {
             _currentState = State.AlgorithmStopped;
-            System.Console.WriteLine($"Cancelation requested");})">Stop!</SfButton>
+            System.Console.WriteLine($"Cancelation requested");})">
+            Stop!
+        </Button>
     }
     @if (_currentState == State.AlgorithmStopped)
     {
-        <SfButton CssClass="e-info" @onclick="@PerformAlgorithmCalculations">Resume!</SfButton>
+        <Button @onclick="@PerformAlgorithmCalculations">Resume!</Button>
     }
     @if (_currentState == State.AlgorithmFinished)
     {
-        <SfButton CssClass="e-info" @onclick="@(async () => {
+        <Button @onclick="@(async () => {
            _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm.Id));
            StateHasChanged();
-            })">Render timelapse!</SfButton>
+            })">
+            Render timelapse!
+        </Button>
 
         if (_pathToLatestTimeLapse != null)
         {

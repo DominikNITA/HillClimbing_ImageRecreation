@@ -1,7 +1,6 @@
 using HillClimbing_ImageRecreation.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Syncfusion.Blazor;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,11 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSyncfusionBlazor();
+builder.Services.AddAntDesign();
 
 var app = builder.Build();
-
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["SyncfusionLicense"]);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

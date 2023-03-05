@@ -1,0 +1,72 @@
+﻿<fieldset>
+    <legend>Initial background color</legend>
+    <GridRow>
+        <Input InputElementSuffixClass="hidden-picker" Type="color" TValue="string" @bind-Value="_backgroundColor" OnChange="OnColorChanged"></Input>
+        <div class="color-preview" style="background-color: @_previewColor"></div>
+    </GridRow>
+
+    <FormItem Label="Alpha">
+        <Slider @bind-Value="_backgroundAlpha"
+                OnChange=@((x) => OnColorChanged()) @*Sliding the slider*@
+                OnAfterChange=@((x) => OnColorChanged()) @*Clicking on the slider*@
+                TValue="double"
+                Min="0"
+                Max="255">
+        </Slider>
+    </FormItem>
+
+</fieldset>
+
+<style>
+    .color-preview {
+        width: 4rem;
+        height: 2rem;
+        cursor: pointer;
+    }
+
+    .hidden-picker {
+        opacity: 0;
+        width: 4rem;
+        height: 2rem;
+        position: absolute;
+        padding: 0;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string InitialBackgroundColor { get; set; }
+
+    [Parameter]
+    public double InitialBackgroundAlpha { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnChangeCallback { get; set; }
+
+    string _backgroundColor;
+    double _backgroundAlpha;
+
+    string _previewColor;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _backgroundColor = InitialBackgroundColor;
+            _backgroundAlpha = InitialBackgroundAlpha;
+            UpdatePreviewColor();
+        }
+        base.OnParametersSet();
+    }
+
+    public void OnColorChanged(object _o = null)
+    {
+        UpdatePreviewColor();
+        OnChangeCallback.InvokeAsync(_previewColor);
+    }
+
+    void UpdatePreviewColor()
+    {
+        _previewColor = $"{_backgroundColor}{((int)_backgroundAlpha).ToString("X").PadLeft(2, '0').ToLower()}";
+    }
+}

@@ -2,9 +2,9 @@
 
 @foreach (var item in CheckableEnums)
 {
-    <Row>
-        <SfCheckBox @bind-Checked="@item.IsSelected" @onchange="OnChange">@item.EnumValue?.ToString()</SfCheckBox>
-    </Row>
+    <GridRow>
+        <Checkbox @bind-Checked="@item.IsSelected" OnChange="OnChange">@item.EnumValue?.ToString()</Checkbox>
+    </GridRow>
 }
 
 @code {
@@ -35,7 +35,7 @@
         }
     }
 
-    private async void OnChange(ChangeEventArgs args)
+    private async void OnChange(bool b)
     {
         await OnChangeCallback.InvokeAsync(CheckableEnums.Where(x => x.IsSelected).Select(x => x.EnumValue!));
     }

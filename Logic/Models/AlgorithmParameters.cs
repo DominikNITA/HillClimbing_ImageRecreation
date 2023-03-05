@@ -13,16 +13,19 @@ namespace Logic.Models
     {
         [Required]
         public int MaxIterations { get; set; }
-        public string BackgroundColorString { get; set; } = string.Empty;
+        
+        [Required]
+        [StringLength(9)]
+        public string BackgroundBaseColorString { get; set; } = string.Empty;
         public Color BackgroundColor
         {
             get
             {
                 return Color.FromArgb(
-                    int.Parse(BackgroundColorString.Substring(7), System.Globalization.NumberStyles.HexNumber),
-                    int.Parse(BackgroundColorString.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
-                    int.Parse(BackgroundColorString.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
-                    int.Parse(BackgroundColorString.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
+                    int.Parse(BackgroundBaseColorString.Substring(7, 2), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundBaseColorString.Substring(1, 2), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundBaseColorString.Substring(3, 2), System.Globalization.NumberStyles.HexNumber),
+                    int.Parse(BackgroundBaseColorString.Substring(5, 2), System.Globalization.NumberStyles.HexNumber)
                     );
             }
         }
@@ -30,9 +33,9 @@ namespace Logic.Models
         [MustHaveOneElement("Select at least one shape")]
         public IEnumerable<Shape>? Shapes { get; set; }
         [Required]
-        public int?[]? ShapeSizeLimits { get; set; }
-        public int MinShapeSize { get { return ShapeSizeLimits?[0] ?? 1; } }
-        public int MaxShapeSize { get { return ShapeSizeLimits?[1] ?? 1; } }
+        public (double, double) ShapeSizeLimits { get; set; }
+        public int MinShapeSize { get { return (int)ShapeSizeLimits.Item1; } }
+        public int MaxShapeSize { get { return (int)ShapeSizeLimits.Item2; } }
         //TODO: Add parameters for bezier curve
         [Required]
         public bool AllowRotation { get; set; }
