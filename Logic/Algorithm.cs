@@ -260,5 +260,14 @@ namespace Logic
         {
             return _parameters.MaxIterations;
         }
+
+        public static double GetScorePercentage(double score, int? width, int? height)
+        {
+            if(width == null || height == null)
+            {
+                return 0;
+            }
+            return (1 - (score) / ((double)width * (double)height * 4)) * 100;
+        }
     }
 }

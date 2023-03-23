@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Logic.Helpers
 {
-    public class StorageHelper
+    // TODO: Don't put images and generated videos into wwwroot file, instead: https://learn.microsoft.com/en-us/answers/questions/498245/how-to-load-images-videos-directly-from-server-in
+    public static class StorageHelper
     {
         const string GlobalFolderName = "algorithm-data";
         const string UnsafeUploadsName = "unsafe_uploads";

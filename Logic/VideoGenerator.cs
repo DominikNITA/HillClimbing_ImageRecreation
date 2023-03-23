@@ -13,6 +13,7 @@ using Logic.Helpers;
 
 namespace Logic
 {
+    //TODO: Add parameter for FFMPEG binaries location
     public class VideoGenerator
     {
         public VideoGenerator()
@@ -20,7 +21,7 @@ namespace Logic
             GlobalFFOptions.Configure(new FFOptions { BinaryFolder = $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}/FFMPEG" });
         }
 
-        public async Task<string> GenerateTimelapseVideo(string id)
+        public async Task<string> GenerateTimelapseVideo(string? id)
         {
             var images = Directory.GetFiles(StorageHelper.GetPathForIterationsFolderById(id));
             foreach (var file in images)
@@ -33,7 +34,7 @@ namespace Logic
                 for (int i = 0; i < count; i++)
                 {
                     var bitmap = new Bitmap(images[i]);
-                    yield return new BitmapVideoFrameWrapper(bitmap); //method that generates of receives the next frame
+                    yield return new BitmapVideoFrameWrapper(bitmap); //method that generates the next frame
                 }
             }
 

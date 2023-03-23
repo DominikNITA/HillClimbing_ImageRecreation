@@ -1,23 +1,89 @@
-﻿<PageHeader>
-    <PageHeaderTitle>Title</PageHeaderTitle>
+﻿@using static HillClimbing_ImageRecreation.Pages.Index
+<PageHeader>
+    <PageHeaderTitle>@(((State)CurrentState).GetDescription())</PageHeaderTitle>
     <PageHeaderExtra>
-        <Button>Operation</Button>
-        <Button>Operation</Button>
-        <Button Type="@ButtonType.Primary">Primary</Button>
+        @if (CurrentState is State.AlgorithmWorking)
+        {
+            <Button @onclick="@OnPause">
+                Stop!
+            </Button>
+        }
+        @if (CurrentState is State.AlgorithmStopped)
+        {
+            <Button @onclick="@OnResume">Resume!</Button>
+        }
     </PageHeaderExtra>
     <PageHeaderContent>
-        <Descriptions Size="small" Column="3">
-            <DescriptionsItem Title="Created" Span="1">Lili Qu</DescriptionsItem>
-            <DescriptionsItem Title="Association" Span="1"><a>421421</a></DescriptionsItem>
-            <DescriptionsItem Title="Creation Time" Span="1">2017-01-10</DescriptionsItem>
-            <DescriptionsItem Title="Effective Time" Span="1">2017-10-10</DescriptionsItem>
-            <DescriptionsItem Title="Remarks" Span="2">
-                Gonghu Road, Xihu District, Hangzhou, Zhejiang, China
-            </DescriptionsItem>
-        </Descriptions>
+        @if (CurrentState is State.SelectingImage)
+        {
+            <div>
+                Upload image to start:
+                <InputFile OnChange="OnFileUpload" accept=".png,.jpg,.jpeg" />
+            </div>
+        }
+        @if (CurrentState is State.SettingParameters)
+        {
+            <Descriptions Size="small" Column="3" Title="Image analysis">
+                <DescriptionsItem Title="Width" Span="1">@Analysis?.Width</DescriptionsItem>
+                <DescriptionsItem Title="Pixel Count" Span="1">@Analysis?.PixelCount</DescriptionsItem>
+                <DescriptionsItem Title="Alpha channel" Span="1">@(Analysis.ContainsAlpha ? "True" : "False")</DescriptionsItem>
+                <DescriptionsItem Title="Height" Span="1">@Analysis?.Height</DescriptionsItem>
+                <DescriptionsItem Title="Distinct colors" Span="1">@Analysis?.ColorCount</DescriptionsItem>
+            </Descriptions>
+        }
+        @if (CurrentState is State.AlgorithmWorking or State.AlgorithmStopped)
+        {
+            @if (CurrentState is State.AlgorithmWorking)
+            {
+                <Button @onclick="@OnPause">
+                    Stop!
+                </Button>
+            }
+            @if (CurrentState is State.AlgorithmStopped)
+            {
+                <Button @onclick="@OnResume">Resume!</Button>
+            }
+            <Descriptions Size="small" Column="2">
+                <DescriptionsItem Title="Iteration" Span="1">
+                    <Progress Percent=@(((double)AlgorithmResultList!.Last().Iteration/AlgorithmParameters!.MaxIterations)*100)
+                          ShowInfo="true"
+                          Format=@((d) => $"{AlgorithmResultList!.Last().Iteration}/{AlgorithmParameters!.MaxIterations}") />
+                </DescriptionsItem>
+                <DescriptionsItem Title="Score" Span="1">@Algorithm.GetScorePercentage(AlgorithmResultList?.Last().Score ?? double.MaxValue, Analysis?.Width, Analysis?.Height)%</DescriptionsItem>
+            </Descriptions>
+        }
+
+        @if (CurrentState is State.AlgorithmFinished)
+        {
+                <Button @onclick="@OnGenerateTimelapse">Generate timelapse video!</Button>
+            
+        }
+
     </PageHeaderContent>
 </PageHeader>
 
 @code {
+    [Parameter]
+    public AnalysisResult? Analysis { get; set; }
 
+    [Parameter]
+    public State CurrentState { get; set; }
+
+    [Parameter]
+    public List<AlgorithmResult>? AlgorithmResultList { get; set; }
+
+    [Parameter]
+    public AlgorithmParameters? AlgorithmParameters { get; set; }
+
+    [Parameter]
+    public EventCallback<InputFileChangeEventArgs> OnFileUpload { get; set; }
+
+    [Parameter]
+    public Action OnPause { get; set; }
+
+    [Parameter]
+    public Action OnResume { get; set; }
+
+    [Parameter]
+    public Action OnGenerateTimelapse { get; set; }
 }
