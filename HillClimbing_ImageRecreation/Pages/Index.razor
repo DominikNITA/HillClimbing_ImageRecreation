@@ -4,19 +4,18 @@
 
 <PageTitle>Hill Climbing Algorithm</PageTitle>
 
-<h1>Hill Climbing Algorithm</h1>
-<h2>Image Recreation - description lorem ipsum</h2>
-
 <DetailsHeader CurrentState="_currentState"
                OnFileUpload="LoadFiles"
                Analysis="_analysisResult"
-               AlgorithmResultList="_algorithmResult"
+               AlgorithmResultList="_algorithmResults"
                OnPause=@(() => {
                _currentState = State.AlgorithmStopped;
                System.Console.WriteLine($"Cancelation requested");})
                OnResume="@PerformAlgorithmCalculations"
                AlgorithmParameters="_algorithmParameters"
                OnGenerateTimelapse="@(async () => {
+                   _currentState = State.GeneratingTimelapse;
+                   StateHasChanged();
                    _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm?.Id));
                    _currentState = State.TimelapseGenerated;
                    StateHasChanged();})">
@@ -39,35 +38,43 @@
 
 @if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped or State.AlgorithmFinished)
 {
-    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-    <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
-    @*    <SfChart Title="Score" Width="60%">
-        <ChartPrimaryXAxis IntervalType="IntervalType.Auto"
-        ValueType="Syncfusion.Blazor.Charts.ValueType.Double">
-        </ChartPrimaryXAxis>
-        <ChartPrimaryYAxis Interval="10"
-        Maximum="100"
-        Minimum=@(Math.Floor(GetScorePercentage(_algorithmResult.First().Score ?? int.MaxValue)/10)*10)
-        RangePadding="ChartRangePadding.Round"
-        LabelFormat="{value}%">
-        </ChartPrimaryYAxis>
-        <ChartSeriesCollection>
-        <ChartSeries DataSource="@_algorithmResult.Where(r => r.Score != null).Select(r => new ChartData() {
-        XValue = r.Iteration,
-        YValue = GetScorePercentage(r.Score ?? 1)
-        })" XName="XValue" YName="YValue" Type="ChartSeriesType.Line">
-        </ChartSeries>
-        </ChartSeriesCollection>
-        </SfChart>*@
+    <GridRow Justify="center">
+        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
+    </GridRow>
 
-    @if (_currentState == State.TimelapseGenerated)
+    if (_currentState is State.AlgorithmFinished)
     {
-        if (_pathToLatestTimeLapse != null)
-        {
-            <video width="@_analysisResult?.Width" height="@_analysisResult?.Height" autoplay controls>
+        <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+    }
+}
+
+@if (_currentState == State.GeneratingTimelapse)
+{
+    <Spin Spinning="true" Tip="Generating Timelapse"></Spin>
+    <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+}
+
+@if (_currentState == State.TimelapseGenerated)
+{
+    if (_pathToLatestTimeLapse != null)
+    {
+        <GridRow Justify="center">
+            <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+            <video class="timelapse"
+           width="@_analysisResult?.Width"
+           height="@_analysisResult?.Height"
+           autoplay
+           controls>
                 <source src="@StorageHelper.ConvertPathToRelativeToWwwroot(_pathToLatestTimeLapse)" type="video/mp4">
             </video>
-        }
+        </GridRow>
+        <GridRow Justify="center">
+            <GridCol Span="12">
+                <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+            </GridCol>
+        </GridRow>
+
     }
 }
 
@@ -75,7 +82,7 @@
     string _path = "";
     AnalysisResult? _analysisResult;
     AlgorithmParameters? _algorithmParameters;
-    List<AlgorithmResult> _algorithmResult = new();
+    List<AlgorithmResult> _algorithmResults = new();
     string? _pathToLatestImage;
     string? _pathToLatestTimeLapse;
     Algorithm? _algorithm;
@@ -89,7 +96,7 @@
     private async void LoadFiles(InputFileChangeEventArgs e)
     {
         _analysisResult = null;
-        _algorithmResult = new();
+        _algorithmResults = new();
 
         var trustedFileNameForFileStorage = StorageHelper.CreateRandomFileNameWithExtension(e.File.Name);
         _path = StorageHelper.GetPathForFileInUnsafeUploads(trustedFileNameForFileStorage);
@@ -120,7 +127,7 @@
             _currentState == State.AlgorithmWorking
         )
         {
-            if (_algorithmResult.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
+            if (_algorithmResults.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
             {
                 PerformAlgorithmCalculations();
             }
@@ -145,7 +152,7 @@
             _pathToLatestImage = result.PathToImage;
         }
 
-        _algorithmResult.Add(result);
+        _algorithmResults.Add(result);
 
         StateHasChanged();
     }
@@ -165,6 +172,8 @@
         [Description("Generation finished")]
         AlgorithmFinished,
         [Description("Video generated")]
-        TimelapseGenerated
+        TimelapseGenerated,
+        [Description("Generating timelapse video")]
+        GeneratingTimelapse,
     }
 }

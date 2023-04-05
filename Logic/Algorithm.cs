@@ -144,7 +144,8 @@ namespace Logic
                 var width = shapeSize.Width;
                 var height = shapeSize.Height;
                 var brush = new SolidBrush(shapeColor);
-
+                
+                //TODO: Fix with SOLID and add tests 
                 if (shapeToDraw == Shape.Ellipse)
                 {
                     currentIterationGraphics.FillEllipse(brush, x, y, width, height);

@@ -64,6 +64,14 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+.timelapse {
+    vertical-align: middle;
+}
+
+/*.ant-row {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}*/
 
 /*legend {
     float: none;
