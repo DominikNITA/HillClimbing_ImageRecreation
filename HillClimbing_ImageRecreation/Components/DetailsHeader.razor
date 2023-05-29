@@ -1,27 +1,26 @@
-﻿@using static HillClimbing_ImageRecreation.Pages.Index
-<PageHeader>
-    <PageHeaderTitle>@(((State)CurrentState).GetDescription())</PageHeaderTitle>
+﻿<PageHeader>
+    <PageHeaderTitle>@(((ApplicationState)CurrentState).GetDescription())</PageHeaderTitle>
     <PageHeaderExtra>
-        @if (CurrentState is State.AlgorithmWorking)
+        @if (CurrentState is ApplicationState.AlgorithmWorking)
         {
             <Button @onclick="@OnPause">
                 Stop!
             </Button>
         }
-        @if (CurrentState is State.AlgorithmStopped)
+        @if (CurrentState is ApplicationState.AlgorithmStopped)
         {
             <Button @onclick="@OnResume">Resume!</Button>
         }
     </PageHeaderExtra>
     <PageHeaderContent>
-        @if (CurrentState is State.SelectingImage)
+        @if (CurrentState is ApplicationState.SelectingImage)
         {
             <div>
                 Upload image to start:
                 <InputFile OnChange="OnFileUpload" accept=".png,.jpg,.jpeg" />
             </div>
         }
-        @if (CurrentState is State.SettingParameters)
+        @if (CurrentState is ApplicationState.SettingParameters)
         {
             <Descriptions Size="small" Column="3" Title="Image analysis">
                 <DescriptionsItem Title="Width" Span="1">@Analysis?.Width</DescriptionsItem>
@@ -31,15 +30,15 @@
                 <DescriptionsItem Title="Distinct colors" Span="1">@Analysis?.ColorCount</DescriptionsItem>
             </Descriptions>
         }
-        @if (CurrentState is State.AlgorithmWorking or State.AlgorithmStopped)
+        @if (CurrentState is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped)
         {
-            @if (CurrentState is State.AlgorithmWorking)
+            @if (CurrentState is ApplicationState.AlgorithmWorking)
             {
                 <Button @onclick="@OnPause">
                     Stop!
                 </Button>
             }
-            @if (CurrentState is State.AlgorithmStopped)
+            @if (CurrentState is ApplicationState.AlgorithmStopped)
             {
                 <Button @onclick="@OnResume">Resume!</Button>
             }
@@ -53,7 +52,7 @@
             </Descriptions>
         }
 
-        @if (CurrentState is State.AlgorithmFinished)
+        @if (CurrentState is ApplicationState.AlgorithmFinished)
         {
             <Button @onclick="@OnGenerateTimelapse">Generate timelapse video!</Button>    
         }
@@ -66,7 +65,7 @@
     public AnalysisResult? Analysis { get; set; }
 
     [Parameter]
-    public State CurrentState { get; set; }
+    public ApplicationState CurrentState { get; set; }
 
     [Parameter]
     public List<AlgorithmResult>? AlgorithmResultList { get; set; }

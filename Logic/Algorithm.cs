@@ -213,11 +213,6 @@ namespace Logic
 
         private AlgorithmResult CalculateResult()
         {
-            //if (_currentIteration >= _parameters.MaxIterations)
-            //{
-            //    UpdateLastScore();
-            //}
-
             var pathToImage = StorageHelper.GetPathForIterationImage(Id, _currentIteration);
             if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
                 _currentIteration < 20)

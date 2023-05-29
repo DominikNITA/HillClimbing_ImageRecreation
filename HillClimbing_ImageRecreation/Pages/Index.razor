@@ -1,179 +1,20 @@
 ﻿@page "/"
-@using System.ComponentModel
-@inject IWebHostEnvironment Environment
+@using static HillClimbing_ImageRecreation.Components.TodoList;
+<h1>Hill Climbing Algorithm</h1>
+<h2>Image recreation</h2>
 
-<PageTitle>Hill Climbing Algorithm</PageTitle>
-
-<DetailsHeader CurrentState="_currentState"
-               OnFileUpload="LoadFiles"
-               Analysis="_analysisResult"
-               AlgorithmResultList="_algorithmResults"
-               OnPause=@(() => {
-               _currentState = State.AlgorithmStopped;
-               System.Console.WriteLine($"Cancelation requested");})
-               OnResume="@PerformAlgorithmCalculations"
-               AlgorithmParameters="_algorithmParameters"
-               OnGenerateTimelapse="@(async () => {
-                   _currentState = State.GeneratingTimelapse;
-                   StateHasChanged();
-                   _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm?.Id));
-                   _currentState = State.TimelapseGenerated;
-                   StateHasChanged();})">
-</DetailsHeader>
-
-@if (_currentState is State.SettingParameters)
-{
-    <GridRow Justify="space-around">
-        <GridCol>
-            <div>
-                <Title>Uploaded image:</Title>
-                <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-            </div>
-        </GridCol>
-        <GridCol>
-            <ParametersSettings Analysis="@_analysisResult" OnAlgorithmParametersSet="@CreateAlgorithm"></ParametersSettings>
-        </GridCol>
-    </GridRow>
-}
-
-@if (_currentState is State.AlgorithmWorking or State.AlgorithmStopped or State.AlgorithmFinished)
-{
-    <GridRow Justify="center">
-        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
-    </GridRow>
-
-    if (_currentState is State.AlgorithmFinished)
-    {
-        <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
-    }
-}
-
-@if (_currentState == State.GeneratingTimelapse)
-{
-    <Spin Spinning="true" Tip="Generating Timelapse"></Spin>
-    <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
-}
-
-@if (_currentState == State.TimelapseGenerated)
-{
-    if (_pathToLatestTimeLapse != null)
-    {
-        <GridRow Justify="center">
-            <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-            <video class="timelapse"
-           width="@_analysisResult?.Width"
-           height="@_analysisResult?.Height"
-           autoplay
-           controls>
-                <source src="@StorageHelper.ConvertPathToRelativeToWwwroot(_pathToLatestTimeLapse)" type="video/mp4">
-            </video>
-        </GridRow>
-        <GridRow Justify="center">
-            <GridCol Span="12">
-                <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
-            </GridCol>
-        </GridRow>
-
-    }
-}
+<TodoList TodoItems=@_todoList></TodoList>
 
 @code {
-    string _path = "";
-    AnalysisResult? _analysisResult;
-    AlgorithmParameters? _algorithmParameters;
-    List<AlgorithmResult> _algorithmResults = new();
-    string? _pathToLatestImage;
-    string? _pathToLatestTimeLapse;
-    Algorithm? _algorithm;
-    State _currentState = State.SelectingImage;
-    public class ChartData
+    List<TodoItem> _todoList = new List<TodoItem>()
     {
-        public int XValue { get; set; }
-        public double YValue { get; set; }
-    }
-
-    private async void LoadFiles(InputFileChangeEventArgs e)
-    {
-        _analysisResult = null;
-        _algorithmResults = new();
-
-        var trustedFileNameForFileStorage = StorageHelper.CreateRandomFileNameWithExtension(e.File.Name);
-        _path = StorageHelper.GetPathForFileInUnsafeUploads(trustedFileNameForFileStorage);
-
-        using (FileStream fs = new(_path, FileMode.Create))
-        {
-            await e.File.OpenReadStream().CopyToAsync(fs);
-        }
-
-        _currentState = State.AnalyzingImage;
-        _analysisResult = Analyzer.AnalyzeImage(_path);
-
-        _currentState = State.SettingParameters;
-        StateHasChanged();
-    }
-
-    void CreateAlgorithm(AlgorithmParameters algorithmParameters)
-    {
-        _algorithmParameters = algorithmParameters;
-        _algorithm = new Algorithm(algorithmParameters, _path, StorageHelper.GlobalFolderPath);
-        _currentState = State.AlgorithmWorking;
-        PerformAlgorithmCalculations();
-    }
-
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender == false &&
-            _currentState == State.AlgorithmWorking
-        )
-        {
-            if (_algorithmResults.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
-            {
-                PerformAlgorithmCalculations();
-            }
-            else
-            {
-                _currentState = State.AlgorithmFinished;
-                StateHasChanged();
-            }
-        }
-        return base.OnAfterRenderAsync(firstRender);
-
-    }
-
-    void PerformAlgorithmCalculations()
-    {
-        _currentState = State.AlgorithmWorking;
-
-        var result = _algorithm!.CalculateNextImage();
-
-        if (result.PathToImage != null)
-        {
-            _pathToLatestImage = result.PathToImage;
-        }
-
-        _algorithmResults.Add(result);
-
-        StateHasChanged();
-    }
-
-    public enum State
-    {
-        [Description("Image selection")]
-        SelectingImage,
-        [Description("Analyzing image")]
-        AnalyzingImage,
-        [Description("Select parameters")]
-        SettingParameters,
-        [Description("Generating image")]
-        AlgorithmWorking,
-        [Description("Generation stopped")]
-        AlgorithmStopped,
-        [Description("Generation finished")]
-        AlgorithmFinished,
-        [Description("Video generated")]
-        TimelapseGenerated,
-        [Description("Generating timelapse video")]
-        GeneratingTimelapse,
-    }
+        new("Add README.md", false),
+        new("Move logic out of Algorithm.cs", false),
+        new("Add unit tests for scoring system", false),
+        new("Add rotation to shapes", false),
+        new("Add algorithm's statistics", false),
+        new("Add description to main page", false),
+        new("Add color dictionary", false),
+        new("Find library for livestreaming current score to the graph", false),
+    };
 }

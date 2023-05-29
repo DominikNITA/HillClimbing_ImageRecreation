@@ -1,0 +1,158 @@
+﻿@page "/main"
+@using System.ComponentModel
+@inject IWebHostEnvironment Environment
+
+<PageTitle>Hill Climbing Algorithm</PageTitle>
+
+<DetailsHeader CurrentState="_currentState"
+               OnFileUpload="LoadFiles"
+               Analysis="_analysisResult"
+               AlgorithmResultList="_algorithmResults"
+               OnPause=@(() => _currentState = ApplicationState.AlgorithmStopped)
+               OnResume="@PerformAlgorithmCalculations"
+               AlgorithmParameters="_algorithmParameters"
+               OnGenerateTimelapse="@(async () => {
+                   _currentState = ApplicationState.GeneratingTimelapse;
+                   StateHasChanged();
+                   _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm?.Id));
+                   _currentState = ApplicationState.TimelapseGenerated;
+                   StateHasChanged();})">
+</DetailsHeader>
+
+@if (_currentState is ApplicationState.SettingParameters)
+{
+    <GridRow Justify="space-around">
+        <GridCol>
+            <div>
+                <Title>Uploaded image:</Title>
+                <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+            </div>
+        </GridCol>
+        <GridCol>
+            <ParametersSettings Analysis="@_analysisResult" OnAlgorithmParametersSet="@CreateAlgorithm"></ParametersSettings>
+        </GridCol>
+    </GridRow>
+}
+
+@if (_currentState is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped or ApplicationState.AlgorithmFinished)
+{
+    <GridRow Justify="center">
+        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
+    </GridRow>
+
+    if (_currentState is ApplicationState.AlgorithmFinished)
+    {
+        <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+    }
+}
+
+@if (_currentState == ApplicationState.GeneratingTimelapse)
+{
+    <Spin Spinning="true" Tip="Generating Timelapse"></Spin>
+    <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+}
+
+@if (_currentState == ApplicationState.TimelapseGenerated)
+{
+    if (_pathToLatestTimeLapse != null)
+    {
+        <GridRow Justify="center">
+            <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+            <video class="timelapse"
+           width="@_analysisResult?.Width"
+           height="@_analysisResult?.Height"
+           autoplay
+           controls>
+                <source src="@StorageHelper.ConvertPathToRelativeToWwwroot(_pathToLatestTimeLapse)" type="video/mp4">
+            </video>
+        </GridRow>
+        <GridRow Justify="center">
+            <GridCol Span="12">
+                <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+            </GridCol>
+        </GridRow>
+
+    }
+}
+
+@code {
+    string _path = "";
+    AnalysisResult? _analysisResult;
+    AlgorithmParameters? _algorithmParameters;
+    List<AlgorithmResult> _algorithmResults = new();
+    string? _pathToLatestImage;
+    string? _pathToLatestTimeLapse;
+    Algorithm? _algorithm;
+    ApplicationState _currentState = ApplicationState.SelectingImage;
+
+    public class ChartData
+    {
+        public int XValue { get; set; }
+        public double YValue { get; set; }
+    }
+
+    private async void LoadFiles(InputFileChangeEventArgs e)
+    {
+        _analysisResult = null;
+        _algorithmResults = new();
+
+        var trustedFileNameForFileStorage = StorageHelper.CreateRandomFileNameWithExtension(e.File.Name);
+        _path = StorageHelper.GetPathForFileInUnsafeUploads(trustedFileNameForFileStorage);
+
+        using (FileStream fs = new(_path, FileMode.Create))
+        {
+            await e.File.OpenReadStream().CopyToAsync(fs);
+        }
+
+        _currentState = ApplicationState.AnalyzingImage;
+        _analysisResult = Analyzer.AnalyzeImage(_path);
+
+        _currentState = ApplicationState.SettingParameters;
+        StateHasChanged();
+    }
+
+    void CreateAlgorithm(AlgorithmParameters algorithmParameters)
+    {
+        _algorithmParameters = algorithmParameters;
+        _algorithm = new Algorithm(algorithmParameters, _path, StorageHelper.GlobalFolderPath);
+        _currentState = ApplicationState.AlgorithmWorking;
+        PerformAlgorithmCalculations();
+    }
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == false &&
+            _currentState == ApplicationState.AlgorithmWorking
+        )
+        {
+            if (_algorithmResults.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
+            {
+                PerformAlgorithmCalculations();
+            }
+            else
+            {
+                _currentState = ApplicationState.AlgorithmFinished;
+                StateHasChanged();
+            }
+        }
+        return base.OnAfterRenderAsync(firstRender);
+
+    }
+
+    void PerformAlgorithmCalculations()
+    {
+        _currentState = ApplicationState.AlgorithmWorking;
+
+        var result = _algorithm!.CalculateNextImage();
+
+        if (result.PathToImage != null)
+        {
+            _pathToLatestImage = result.PathToImage;
+        }
+
+        _algorithmResults.Add(result);
+
+        StateHasChanged();
+    }
+}

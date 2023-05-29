@@ -1,0 +1,25 @@
+﻿<h3>Todo list:</h3>
+
+<div>
+    @if (TodoItems.Count < 1)
+    {
+        <div>Nothing to do :)</div>
+    }
+    else
+    {
+        @foreach (var item in TodoItems)
+        {
+            <Row>
+                <Checkbox Checked=@item.IsFinished Disabled>@item.Name</Checkbox>
+        </Row>
+        }
+    }
+</div>
+
+@code {
+    public record TodoItem(string Name, bool IsFinished);
+
+    [Parameter]
+    public List<TodoItem> TodoItems { get; set; }
+
+}
