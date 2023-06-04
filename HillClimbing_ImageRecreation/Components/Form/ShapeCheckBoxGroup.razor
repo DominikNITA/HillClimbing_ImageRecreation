@@ -1,0 +1,44 @@
+﻿@inject ShapeTypesProvider ShapeTypesProvider
+
+@foreach (var item in CheckableShapes)
+{
+    <GridRow>
+        <Checkbox @bind-Checked="@item.IsSelected" OnChange="OnChange">@item.DisplayName</Checkbox>
+    </GridRow>
+}
+
+@code {
+    [Parameter] 
+    public bool AllInitiallySelected { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<IEnumerable<Type>> OnChangeCallback { get; set; }
+
+    public class CheckableShape
+    {
+        public Type ShapeType { get; set; }
+        public string DisplayName { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    List<CheckableShape> CheckableShapes { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        foreach (var shapeWithDisplayName in ShapeTypesProvider.ShapeTypesWithDisplayNames)
+        {
+            CheckableShapes.Add(new()
+                {
+                    ShapeType = shapeWithDisplayName.ShapeType,
+                    DisplayName = shapeWithDisplayName.DisplayName,
+                    IsSelected = AllInitiallySelected
+                }
+            );
+        }
+    }
+
+    private async void OnChange(bool b)
+    {
+        await OnChangeCallback.InvokeAsync(CheckableShapes.Where(x => x.IsSelected).Select(x => x.ShapeType));
+    }
+}

@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Logic.Shapes
 {
-    public interface IShape
+    public interface IDrawable
     {
-        void Draw(Graphics graphics);
-
-        public IEnumerable<Point> GetModifiedPixels(Bitmap image);
+        static abstract void Draw(Graphics graphics, Brush brush, Size shapeSize, Point shapePosition, float shapeRotation);
     }
 }

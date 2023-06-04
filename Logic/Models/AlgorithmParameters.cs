@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using static Logic.Helpers.ValidationHelper;
+using Logic.Shapes;
 
 namespace Logic.Models
 {
@@ -31,7 +32,7 @@ namespace Logic.Models
         }
         [Required]
         [MustHaveOneElement("Select at least one shape")]
-        public IEnumerable<Shape>? Shapes { get; set; }
+        public IEnumerable<Type>? Shapes { get; set; }
         [Required]
         public (double, double) ShapeSizeLimits { get; set; }
         public int MinShapeSize { get { return (int)ShapeSizeLimits.Item1; } }
@@ -50,13 +51,5 @@ namespace Logic.Models
         /// Every how many iterations the generated image should be saved and sent back to user
         /// </summary>
         public int ImagePresentationInterval { get; set; }
-    }
-
-    public enum Shape
-    {
-        Ellipse,
-        Circle,
-        Rectangle,
-        Triangle
     }
 }

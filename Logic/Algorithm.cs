@@ -1,5 +1,6 @@
 ﻿using Logic.Helpers;
 using Logic.Models;
+using Logic.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -24,6 +25,8 @@ namespace Logic
         int _currentIteration = 0;
 
         Random _random;
+
+        ShapeFactory _shapeFactory;
 
         public string Id { get; private set; }
 
@@ -54,14 +57,15 @@ namespace Logic
 
         private bool NextIteration()
         {
-            Shape shapeToDraw = GetRandomShapeToDraw(_parameters);
-            Size shapeSize = GetRandomShapeSize(_parameters);
-            Point shapePosition = GetRandomShapePosition(_targetImageBitmap, shapeSize);
-            Color shapeColor = GetRandomShapeColor();
+            IShape shapeToDraw = _shapeFactory.CreateRandomShape();
 
-            Bitmap currentIterationBitmap = DrawShape(shapeToDraw, shapeSize, shapePosition, shapeColor);
+            Bitmap currentIterationBitmap = new(_lastImageBitmap);
+            using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
+            {
+                shapeToDraw.Draw(currentIterationGraphics);
+            }
 
-            var scoreDifference = CompareScores(currentIterationBitmap, _lastImageBitmap, shapeSize, shapePosition);
+            var scoreDifference = CompareScores(currentIterationBitmap, _lastImageBitmap, shapeToDraw);
             if (scoreDifference < 0)
             {
                 _lastImageBitmap = currentIterationBitmap;
@@ -72,9 +76,16 @@ namespace Logic
             return false;
         }
 
-        private double CompareScores(Bitmap currentIterationBitmap, Bitmap lastImageBitmap, Size shapeSize, Point shapePosition)
+        private double CompareScores(Bitmap currentIterationBitmap, Bitmap lastImageBitmap, IShape shape)
         {
-            return GetScore(currentIterationBitmap, shapeSize, shapePosition) - GetScore(lastImageBitmap, shapeSize, shapePosition);
+            double score = 0;
+            foreach (var pixelCoords in shape.GetModifiedPixels(currentIterationBitmap))
+            {
+                var currentIterationPixel = currentIterationBitmap.GetPixel(pixelCoords.X, pixelCoords.Y);
+                var lastIterationPixel = lastImageBitmap.GetPixel(pixelCoords.X, pixelCoords.Y);
+                score += CalculateScoreForPixel(pixelCoords.X, pixelCoords.Y, currentIterationPixel) - CalculateScoreForPixel(pixelCoords.X, pixelCoords.Y, lastIterationPixel);
+            }
+            return score;
         }
 
         private double GetScore(Bitmap image, Size shapeSize, Point shapePosition)
@@ -128,87 +139,52 @@ namespace Logic
             return score;
         }
 
-        private Bitmap DrawShape(Shape shapeToDraw, Size shapeSize, Point shapePosition, Color shapeColor)
+        private Bitmap DrawShape(Shape shapeToDraw)
         {
             Bitmap currentIterationBitmap = new(_lastImageBitmap);
             using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
             {
-                if (_random.NextDouble() < _parameters.UseBackgroundColorChance)
-                {
-                    currentIterationGraphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                    shapeColor = _parameters.BackgroundColor;
-                }
+                //if (_random.NextDouble() < _parameters.UseBackgroundColorChance)
+                //{
+                //    currentIterationGraphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                //    shapeColor = _parameters.BackgroundColor;
+                //}
 
-                var x = shapePosition.X;
-                var y = shapePosition.Y;
-                var width = shapeSize.Width;
-                var height = shapeSize.Height;
-                var brush = new SolidBrush(shapeColor);
+                //var x = shapePosition.X;
+                //var y = shapePosition.Y;
+                //var width = shapeSize.Width;
+                //var height = shapeSize.Height;
+                //var brush = new SolidBrush(shapeColor);
                 
-                //TODO: Fix with SOLID and add tests 
-                if (shapeToDraw == Shape.Ellipse)
-                {
-                    currentIterationGraphics.FillEllipse(brush, x, y, width, height);
-                }
-                else if (shapeToDraw == Shape.Circle)
-                {
-                    currentIterationGraphics.FillEllipse(brush, x, y, width, width);
-                }
-                else if (shapeToDraw == Shape.Triangle)
-                {
-                    var trianglePoints = new Point[]
-                    {
-                        new(x, y),
-                        new(x + width, y),
-                        new(x + width/2, y + height),
-                    };
-                    currentIterationGraphics.FillPolygon(brush, trianglePoints);
-                }
-                else if (shapeToDraw == Shape.Rectangle)
-                {
-                    currentIterationGraphics.FillRectangle(brush, new Rectangle(x, y, width, height));
-                }
-                brush.Dispose();
+                ////TODO: Fix with SOLID and add tests 
+                //if (shapeToDraw == Shape.Ellipse)
+                //{
+                //    currentIterationGraphics.FillEllipse(brush, x, y, width, height);
+                //}
+                //else if (shapeToDraw == Shape.Circle)
+                //{
+                //    currentIterationGraphics.FillEllipse(brush, x, y, width, width);
+                //}
+                //else if (shapeToDraw == Shape.Triangle)
+                //{
+                //    var trianglePoints = new Point[]
+                //    {
+                //        new(x, y),
+                //        new(x + width, y),
+                //        new(x + width/2, y + height),
+                //    };
+                //    currentIterationGraphics.FillPolygon(brush, trianglePoints);
+                //}
+                //else if (shapeToDraw == Shape.Rectangle)
+                //{
+                //    currentIterationGraphics.FillRectangle(brush, new Rectangle(x, y, width, height));
+                //}
+                //brush.Dispose();
 
                 //var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
                 //currentIterationBitmap.Save(pathToImage);
                 return currentIterationBitmap;
             }
-        }
-
-        private Color GetRandomShapeColor()
-        {
-            return Color.FromArgb(
-                _parameters.AllowAlpha ? _random.Next(1, 256) : 255,
-                _random.Next(0, 256),
-                _random.Next(0, 256),
-                _random.Next(0, 256)
-                );
-        }
-
-        private Point GetRandomShapePosition(Bitmap bitmap, Size shapeSize)
-        {
-            return new Point(
-                _random.Next(0 - (shapeSize.Width / 2), bitmap.Width + (shapeSize.Width / 2)),
-                _random.Next(0 - (shapeSize.Height / 2), bitmap.Height + (shapeSize.Height / 2))
-                );
-        }
-
-        private Size GetRandomShapeSize(AlgorithmParameters parameters)
-        {
-            return new Size(
-                _random.Next(parameters.MinShapeSize, parameters.MaxShapeSize),
-                _random.Next(parameters.MinShapeSize, parameters.MaxShapeSize)
-                );
-        }
-
-        private Shape GetRandomShapeToDraw(AlgorithmParameters parameters)
-        {
-            if (parameters == null || parameters.Shapes == null)
-            {
-                return Shape.Ellipse;
-            }
-            return parameters.Shapes.ElementAt(_random.Next(0, parameters.Shapes.Count()));
         }
 
         private AlgorithmResult CalculateResult()
@@ -238,7 +214,7 @@ namespace Logic
             _lastImageBitmap = new(_targetImageBitmap.Width, _targetImageBitmap.Height, PixelFormat.Format32bppArgb);
 
             Graphics initialGraphics = Graphics.FromImage(_lastImageBitmap);
-            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
+            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new System.Drawing.Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
 
             Id = DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(StorageHelper.GetPathForIterationsFolderById(Id));
@@ -250,6 +226,8 @@ namespace Logic
              new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
              new Point() { X = 0, Y = 0 }
             );
+
+            _shapeFactory = new ShapeFactory(_parameters, _targetImageBitmap.Width, _targetImageBitmap.Height);
         }
 
         public int GetMaxIterations()

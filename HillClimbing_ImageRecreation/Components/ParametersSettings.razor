@@ -7,7 +7,7 @@
         <ValidationSummary />
 
         <Divider Orientation="left" Style="font-weight:bold">Used shapes</Divider>
-        <EnumCheckBoxGroup TEnum="Shape" AllInitiallySelected="true" OnChangeCallback="@((x) => _parametersModel.Shapes = x)"></EnumCheckBoxGroup>
+        <ShapeCheckBoxGroup AllInitiallySelected="true" OnChangeCallback="@((x) => _parametersModel.Shapes = x)"></ShapeCheckBoxGroup>
 
         <Divider Orientation="left" Style="font-weight:bold">Shape size limits[px]: [@_parametersModel.MinShapeSize, @_parametersModel.MaxShapeSize]</Divider>
         <Slider @bind-Value="_parametersModel.ShapeSizeLimits"
@@ -56,7 +56,6 @@
         _parametersModel.ShapeSizeLimits = (1, GetMaxShapeLimit() / 2);
         _parametersModel.BackgroundBaseColorString = "#e1d9d9ff";
         _parametersModel.MaxIterations = 1000;
-        _parametersModel.Shapes = new List<Shape>() { Shape.Ellipse, Shape.Rectangle, Shape.Triangle };
         _parametersModel.ImagePresentationInterval = 10;
         _parametersModel.UseBackgroundColorChance = 0.025;
     }
