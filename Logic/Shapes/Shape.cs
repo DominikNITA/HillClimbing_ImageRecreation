@@ -19,6 +19,9 @@ namespace Logic.Shapes
         public Point Position { get; init; }
         public float Rotation { get; init; }
 
+        protected int _halfWidth => Size.Width / 2;
+        protected int _halfHeight => Size.Height / 2;
+
         public Shape(Color color, Size size, Point position, float rotation, bool isUsingBackgroundColor)
         {
             Color = color;
@@ -38,9 +41,9 @@ namespace Logic.Shapes
 
         public IEnumerable<Point> GetModifiedPixels(Bitmap image)
         {
-            for (int x = Position.X; x < Position.X + Size.Width; x++)
+            for (int x = Position.X - _halfWidth; x < Position.X + _halfWidth; x++)
             {
-                for (int y = Position.Y; y < Position.Y + Size.Height; y++)
+                for (int y = Position.Y - _halfHeight; y < Position.Y + _halfHeight; y++)
                 {
                     if (x < 0 || y < 0 || x >= image.Width || y >= image.Height)
                     {

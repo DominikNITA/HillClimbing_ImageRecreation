@@ -1,0 +1,53 @@
+﻿@page "/tests"
+
+@inject ShapeTypesProvider ShapeTypesProvider
+
+<h3>ShapeTester</h3>
+
+<img src="data:image/gif;base64,@_testImage">
+
+<Form Model="@_shapeParameters" OnFieldChanged="UpdateShapeImage">
+    <Divider Orientation="left" Style="font-weight:bold">Shape</Divider>
+    <ShapeCheckBoxGroup AllInitiallySelected="true" OnChangeCallback="@((x) => {_shapeParameters.Type = x.FirstOrDefault(); UpdateShapeImage();})"></ShapeCheckBoxGroup>
+
+
+    <Divider Orientation="left" Style="font-weight:bold">Rotation</Divider>
+    <AntDesign.InputNumber TValue="float" Min="0" Max="360" Step="1" @bind-Value=@_shapeParameters.Rotation OnChange="UpdateShapeImage"></AntDesign.InputNumber>
+
+</Form>
+
+@code {
+    string _testImage;
+    ShapeParameters _shapeParameters = new();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    void UpdateShapeImage()
+    {
+        Console.WriteLine("Test");
+        if (_shapeParameters.Type == null)
+        {
+            return;
+        }
+
+        var shapeTester = new Logic.Tests.ShapeTester();
+        _testImage = shapeTester.CreateImage(
+            _shapeParameters.Type,
+            System.Drawing.Color.Goldenrod,
+            new System.Drawing.Size() { Width = 40, Height = 22 },
+            new System.Drawing.Point() { X = 30, Y = 55 },
+            _shapeParameters.Rotation,
+            false
+            );
+    }
+
+    class ShapeParameters
+    {
+        public Type Type { get; set; }
+
+        public float Rotation { get; set; }
+    }
+}

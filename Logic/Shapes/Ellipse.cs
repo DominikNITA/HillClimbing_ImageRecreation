@@ -20,9 +20,9 @@ namespace Logic.Shapes
             base.Draw(graphics);
             using (Matrix m = new Matrix())
             {
-                m.RotateAt(Rotation, new PointF(Position.X + (Size.Width / 2), Position.Y - (Size.Height / 2)));
-                graphics.Transform = m;
-                graphics.FillEllipse(new SolidBrush(Color), Position.X, Position.Y, Size.Width, Size.Height);
+                graphics.TranslateTransform(Position.X, Position.Y);
+                graphics.RotateTransform(Rotation);
+                graphics.FillEllipse(new SolidBrush(Color), -_halfWidth, -_halfHeight, Size.Width, Size.Height);
                 graphics.ResetTransform();
             }
         }

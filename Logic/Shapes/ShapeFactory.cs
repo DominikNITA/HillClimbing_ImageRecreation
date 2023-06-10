@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,13 +32,24 @@ namespace Logic.Shapes
             var position = GetRandomShapePosition(size);
             var rotation = GetRandomRotation();
 
-            return (IShape)Activator.CreateInstance(_algorithmParameters.Shapes.ElementAt(index),
+            return CreateShape(_algorithmParameters.Shapes.ElementAt(index),
                 color,
                 size,
                 position,
                 rotation,
                 isBackgroundColor);
         }
+
+        public static IShape CreateShape(Type shapeType, Color color, Size size, Point position, float rotation, bool isBackgroundColor)
+        {
+            return (IShape)Activator.CreateInstance(shapeType,
+                color,
+                size,
+                position,
+                rotation,
+                isBackgroundColor);
+        }
+
 
         private (Color color, bool isBackgroundColor) GetRandomShapeColor()
         {
