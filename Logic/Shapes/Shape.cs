@@ -40,25 +40,18 @@ namespace Logic.Shapes
             }
         }
 
-        public IEnumerable<Point> GetModifiedPixels(Bitmap image)
-        {
-            //int x1, x2, y1, y2;
-            //x1 = (int)(Position.X - _halfWidth * Math.Cos(AngleToDegree(Rotation)) + _halfHeight * Math.Sin(AngleToDegree(Rotation)));
-            //x2 = (int)(Position.X + _halfWidth * Math.Cos(AngleToDegree(Rotation)) - _halfHeight * Math.Sin(AngleToDegree(Rotation)));
-            //y1 = (int)(Position.Y - _halfWidth * Math.Cos(AngleToDegree(Rotation)) + _halfHeight * Math.Sin(AngleToDegree(Rotation)));
-            //y2 = (int)(Position.Y + _halfWidth * Math.Cos(AngleToDegree(Rotation)) - _halfHeight * Math.Sin(AngleToDegree(Rotation)));
+        protected record BoundingBox(int Left, int Right, int Top, int Bottom);
 
-            //for (int x = Math.Min(x1, x2); x < Math.Max(x1, x2); x++)
-            //{
-            //    for (int y = Math.Min(y1, y2); y < Math.Max(y1, y2); y++)
-            //    {
-            //        if (x < 0 || y < 0 || x >= image.Width || y >= image.Height)
-            //        {
-            //            continue;
-            //        }
-            //        yield return new Point(x, y);
-            //    }
-            //}
+        protected BoundingBox GetBoundingBoxIgnoringRotation()
+        {
+            return new(Position.X - _halfWidth,
+                Position.X + _halfWidth,
+                Position.Y - _halfHeight,
+                Position.Y + _halfHeight);
+        }
+
+        protected BoundingBox GetBoundingBoxWithRotation()
+        {
             double angle = Rotation * Math.PI / 180;
             double cos = Math.Cos(angle);
             double sin = Math.Sin(angle);
@@ -76,13 +69,19 @@ namespace Logic.Shapes
             y_values[2] = (int)(Y0 - halfWidth * sin + halfHeight * cos);
             x_values[3] = (int)(X0 - halfWidth * cos + halfHeight * sin);
             y_values[3] = (int)(Y0 - halfWidth * sin - halfHeight * cos);
-            int left = x_values.Min();
-            int right = x_values.Max();
-            int top = y_values.Min();
-            int bottom = y_values.Max();
-            for (int x = left; x < right; x++)
+            int left = x_values.Min() - 1;
+            int right = x_values.Max() + 1;
+            int top = y_values.Min() - 1;
+            int bottom = y_values.Max() + 1;
+
+            return new(left, right, top, bottom);
+        }
+
+        protected IEnumerable<Point> GetModifiedPixelsFromBoundingBox(BoundingBox boundingBox, Bitmap image)
+        {
+            for (int x = boundingBox.Left; x < boundingBox.Right; x++)
             {
-                for (int y = top; y < bottom; y++)
+                for (int y = boundingBox.Top; y < boundingBox.Bottom; y++)
                 {
                     if (x < 0 || y < 0 || x >= image.Width || y >= image.Height)
                     {
@@ -93,9 +92,18 @@ namespace Logic.Shapes
             }
         }
 
-        public static double AngleToDegree(float degree)
+        public virtual IEnumerable<Point> GetModifiedPixels(Bitmap image)
         {
-            return (Math.PI / 180) * degree;
+            BoundingBox boundingBox;
+            if (Rotation == 0)
+            {
+                boundingBox = GetBoundingBoxIgnoringRotation();
+            }
+            else
+            {
+                boundingBox = GetBoundingBoxWithRotation();
+            }
+            return GetModifiedPixelsFromBoundingBox(boundingBox, image);
         }
     }
 }

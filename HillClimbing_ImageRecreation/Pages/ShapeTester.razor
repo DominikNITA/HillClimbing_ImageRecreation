@@ -15,7 +15,7 @@
                       Min="0"
                       Max="360"
                       Step="1"
-                      @bind-Value=@_shapeParameters.Rotation
+    @bind-Value=@_shapeParameters.Rotation
                       OnChange="UpdateShapeImage"
                       Style="width:120px"></AntDesign.Slider>
 
@@ -47,6 +47,7 @@
             _shapeParameters.Rotation,
             false
             );
+        StateHasChanged();
     }
 
     class ShapeParameters

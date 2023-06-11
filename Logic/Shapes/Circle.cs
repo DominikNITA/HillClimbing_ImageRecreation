@@ -13,7 +13,7 @@ namespace Logic.Shapes
         public new static string DisplayName { get; } = "Circle";
         public Circle(Color color, Size size, Point position, float rotation, bool isUsingBackgroundColor) : base(color, size, position, rotation, isUsingBackgroundColor)
         {
-            Size = new Size(size.Width, size.Width);   
+            Size = new Size(size.Width, size.Width);
         }
 
         public override void Draw(Graphics graphics)
@@ -25,6 +25,13 @@ namespace Logic.Shapes
                 graphics.FillEllipse(new SolidBrush(Color), -_halfWidth, -_halfHeight, Size.Width, Size.Width);
                 graphics.ResetTransform();
             }
+        }
+
+        public override IEnumerable<Point> GetModifiedPixels(Bitmap image)
+        {
+            BoundingBox boundingBox = GetBoundingBoxIgnoringRotation();
+
+            return GetModifiedPixelsFromBoundingBox(boundingBox, image);
         }
     }
 }
