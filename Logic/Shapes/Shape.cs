@@ -55,20 +55,21 @@ namespace Logic.Shapes
             double angle = Rotation * Math.PI / 180;
             double cos = Math.Cos(angle);
             double sin = Math.Sin(angle);
-            int halfWidth = Size.Width / 2;
-            int halfHeight = Size.Height / 2;
+
             int X0 = Position.X;
             int Y0 = Position.Y;
+
             int[] x_values = new int[4];
             int[] y_values = new int[4];
-            x_values[0] = (int)(X0 + halfWidth * cos - halfHeight * sin);
-            y_values[0] = (int)(Y0 + halfWidth * sin + halfHeight * cos);
-            x_values[1] = (int)(X0 + halfWidth * cos + halfHeight * sin);
-            y_values[1] = (int)(Y0 + halfWidth * sin - halfHeight * cos);
-            x_values[2] = (int)(X0 - halfWidth * cos - halfHeight * sin);
-            y_values[2] = (int)(Y0 - halfWidth * sin + halfHeight * cos);
-            x_values[3] = (int)(X0 - halfWidth * cos + halfHeight * sin);
-            y_values[3] = (int)(Y0 - halfWidth * sin - halfHeight * cos);
+            x_values[0] = (int)(X0 + _halfWidth * cos - _halfHeight * sin);
+            y_values[0] = (int)(Y0 + _halfWidth * sin + _halfHeight * cos);
+            x_values[1] = (int)(X0 + _halfWidth * cos + _halfHeight * sin);
+            y_values[1] = (int)(Y0 + _halfWidth * sin - _halfHeight * cos);
+            x_values[2] = (int)(X0 - _halfWidth * cos - _halfHeight * sin);
+            y_values[2] = (int)(Y0 - _halfWidth * sin + _halfHeight * cos);
+            x_values[3] = (int)(X0 - _halfWidth * cos + _halfHeight * sin);
+            y_values[3] = (int)(Y0 - _halfWidth * sin - _halfHeight * cos);
+
             int left = x_values.Min() - 1;
             int right = x_values.Max() + 1;
             int top = y_values.Min() - 1;
