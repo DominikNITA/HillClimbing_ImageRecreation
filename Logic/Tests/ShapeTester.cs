@@ -14,14 +14,14 @@ namespace Logic.Tests
         private const int IMAGE_WIDTH = 100, IMAGE_HEIGHT = 100;
         private static Color BACKGROUND_COLOR = Color.LightGray;
         private static Color SHAPE_COLOR = Color.DarkBlue;
-        public string CreateImage(Type shapeType, Color color, Size size, Point position, float rotation, bool isUsingBackgroundColor)
+        public string CreateImage(Type shapeType, Color color, Size size, Point position, double rotation, bool isUsingBackgroundColor)
         {
             var image = new Bitmap(IMAGE_WIDTH, IMAGE_HEIGHT, PixelFormat.Format32bppArgb);
 
             Graphics initialGraphics = Graphics.FromImage(image);
             initialGraphics.FillRectangle(new SolidBrush(BACKGROUND_COLOR), new System.Drawing.Rectangle(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
 
-            var shapeToDraw = ShapeFactory.CreateShape(shapeType, SHAPE_COLOR, size, position, rotation, isUsingBackgroundColor);
+            var shapeToDraw = ShapeFactory.CreateShape(shapeType, SHAPE_COLOR, size, position, (float)rotation, isUsingBackgroundColor);
             shapeToDraw.Draw(initialGraphics);
 
             var outineBrush = new SolidBrush(Color.FromArgb(50, Color.Red));

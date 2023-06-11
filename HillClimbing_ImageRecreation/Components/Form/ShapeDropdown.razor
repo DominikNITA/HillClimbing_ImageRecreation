@@ -1,0 +1,44 @@
+﻿@inject ShapeTypesProvider ShapeTypesProvider
+
+
+<GridRow>
+    <Select TItem="CheckableShape"
+            TItemValue="string"
+            DataSource="@CheckableShapes"
+            LabelName="@nameof(CheckableShape.DisplayName)"
+            ValueName="@nameof(CheckableShape.DisplayName)"
+            OnSelectedItemChanged="OnChange"
+            Style="width:120px"></Select>
+</GridRow>
+
+
+@code {
+    [Parameter]
+    public EventCallback<Type> OnChangeCallback { get; set; }
+
+    public class CheckableShape
+    {
+        public Type ShapeType { get; set; }
+        public string DisplayName { get; set; }
+    }
+
+    List<CheckableShape> CheckableShapes { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        foreach (var shapeWithDisplayName in ShapeTypesProvider.ShapeTypesWithDisplayNames)
+        {
+            CheckableShapes.Add(new()
+                {
+                    ShapeType = shapeWithDisplayName.ShapeType,
+                    DisplayName = shapeWithDisplayName.DisplayName,
+                }
+            );
+        }
+    }
+
+    private async void OnChange(CheckableShape shapeSelected)
+    {
+        await OnChangeCallback.InvokeAsync(shapeSelected.ShapeType);
+    }
+}

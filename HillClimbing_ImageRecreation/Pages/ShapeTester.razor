@@ -6,13 +6,18 @@
 
 <img src="data:image/gif;base64,@_testImage">
 
-<Form Model="@_shapeParameters" OnFieldChanged="UpdateShapeImage">
+<Form Model="@_shapeParameters">
     <Divider Orientation="left" Style="font-weight:bold">Shape</Divider>
-    <ShapeCheckBoxGroup AllInitiallySelected="true" OnChangeCallback="@((x) => {_shapeParameters.Type = x.FirstOrDefault(); UpdateShapeImage();})"></ShapeCheckBoxGroup>
-
+    <ShapeDropdown OnChangeCallback="@((x) => {_shapeParameters.Type = x; UpdateShapeImage();})"></ShapeDropdown>
 
     <Divider Orientation="left" Style="font-weight:bold">Rotation</Divider>
-    <AntDesign.InputNumber TValue="float" Min="0" Max="360" Step="1" @bind-Value=@_shapeParameters.Rotation OnChange="UpdateShapeImage"></AntDesign.InputNumber>
+    <AntDesign.Slider TValue="double"
+                      Min="0"
+                      Max="360"
+                      Step="1"
+                      @bind-Value=@_shapeParameters.Rotation
+                      OnChange="UpdateShapeImage"
+                      Style="width:120px"></AntDesign.Slider>
 
 </Form>
 
@@ -25,7 +30,7 @@
         base.OnInitialized();
     }
 
-    void UpdateShapeImage()
+    void UpdateShapeImage(double newValue = 0)
     {
         Console.WriteLine("Test");
         if (_shapeParameters.Type == null)
@@ -48,6 +53,6 @@
     {
         public Type Type { get; set; }
 
-        public float Rotation { get; set; }
+        public double Rotation { get; set; }
     }
 }

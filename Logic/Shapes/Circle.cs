@@ -21,7 +21,9 @@ namespace Logic.Shapes
             base.Draw(graphics);
             using (Matrix m = new Matrix())
             {
-                graphics.FillEllipse(new SolidBrush(Color), Position.X, Position.Y, Size.Width, Size.Width);
+                graphics.TranslateTransform(Position.X, Position.Y);
+                graphics.FillEllipse(new SolidBrush(Color), -_halfWidth, -_halfHeight, Size.Width, Size.Width);
+                graphics.ResetTransform();
             }
         }
     }
