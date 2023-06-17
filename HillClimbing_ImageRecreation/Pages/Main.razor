@@ -115,7 +115,7 @@
     void CreateAlgorithm(AlgorithmParameters algorithmParameters)
     {
         _algorithmParameters = algorithmParameters;
-        _algorithm = new Algorithm(algorithmParameters, _path, StorageHelper.GlobalFolderPath);
+        _algorithm = new Algorithm(algorithmParameters, _path);
         _currentState = ApplicationState.AlgorithmWorking;
         PerformAlgorithmCalculations();
     }

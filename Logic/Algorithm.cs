@@ -1,5 +1,6 @@
 ﻿using Logic.Helpers;
 using Logic.Models;
+using Logic.ScoreCalculator;
 using Logic.Shapes;
 using System;
 using System.Collections.Generic;
@@ -19,22 +20,23 @@ namespace Logic
         Bitmap _targetImageBitmap;
 
         double _lastScore = -1;
-        string _pathToLastImage = "";
-        Bitmap _lastImageBitmap;
+        Bitmap _latestImageBitmap;
 
         int _currentIteration = 0;
 
-        Random _random;
-
         ShapeFactory _shapeFactory;
+
+        IScoreCalculator _scoreCalculator;
 
         public string Id { get; private set; }
 
-        public Algorithm(AlgorithmParameters parameters, string pathToTargetImage, string pathToStorage)
+        const int MAX_ATTEMPTS_PER_ITERATION = 10000;
+
+        public Algorithm(AlgorithmParameters parameters, string pathToTargetImage)
         {
             _parameters = parameters;
             _pathToTargetImage = pathToTargetImage;
-            _random = new Random();
+            _scoreCalculator = new BasicScoreCalculator();
             Initialize();
         }
 
@@ -46,9 +48,9 @@ namespace Logic
             while (NextIteration() == false)
             {
                 attempts++;
-                if (attempts >= 10000)
+                if (attempts >= MAX_ATTEMPTS_PER_ITERATION)
                 {
-                    throw new Exception("Could not find better solution in 100 attempts");
+                    throw new Exception($"Could not find better solution in {MAX_ATTEMPTS_PER_ITERATION} attempts");
                 }
             }
 
@@ -59,132 +61,22 @@ namespace Logic
         {
             IShape shapeToDraw = _shapeFactory.CreateRandomShape();
 
-            Bitmap currentIterationBitmap = new(_lastImageBitmap);
+            Bitmap currentIterationBitmap = new(_latestImageBitmap);
             using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
             {
                 shapeToDraw.Draw(currentIterationGraphics);
             }
 
-            var scoreDifference = CompareScores(currentIterationBitmap, _lastImageBitmap, shapeToDraw);
+            var scoreDifference = _scoreCalculator.CompareScores(currentIterationBitmap, _latestImageBitmap, shapeToDraw, _targetImageBitmap);
             if (scoreDifference < 0)
             {
-                _lastImageBitmap = currentIterationBitmap;
+                _latestImageBitmap = currentIterationBitmap;
                 _lastScore += scoreDifference;
+                currentIterationBitmap.Dispose();
                 return true;
             }
             currentIterationBitmap.Dispose();
             return false;
-        }
-
-        private double CompareScores(Bitmap currentIterationBitmap, Bitmap lastImageBitmap, IShape shape)
-        {
-            double score = 0;
-            foreach (var pixelCoords in shape.GetModifiedPixels(currentIterationBitmap))
-            {
-                var currentIterationPixel = currentIterationBitmap.GetPixel(pixelCoords.X, pixelCoords.Y);
-                var lastIterationPixel = lastImageBitmap.GetPixel(pixelCoords.X, pixelCoords.Y);
-                score += CalculateScoreForPixel(pixelCoords.X, pixelCoords.Y, currentIterationPixel) - CalculateScoreForPixel(pixelCoords.X, pixelCoords.Y, lastIterationPixel);
-            }
-            return score;
-        }
-
-        private double GetScore(Bitmap image, Size shapeSize, Point shapePosition)
-        {
-            float multiplier = 1.4f;
-            double score = 0;
-            for (int x = shapePosition.X; x < shapePosition.X + shapeSize.Width; x++)
-            {
-                for (int y = shapePosition.Y; y < shapePosition.Y + shapeSize.Height; y++)
-                {
-                    if (x < 0 || y < 0 || x >= image.Width || y >= image.Height)
-                    {
-                        continue;
-                    }
-                    var pixel = image.GetPixel(x, y);
-                    score += CalculateScoreForPixel(x, y, pixel);
-                }
-            }
-            return score;
-        }
-
-        /// <summary>
-        /// Calculates the score for given pixel. Best score 0, worst score 4
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="pixelColor"></param>
-        /// <returns></returns>
-        private double CalculateScoreForPixel(int x, int y, Color pixelColor)
-        {
-            var targetPixel = _targetImageBitmap.GetPixel(x, y);
-            double score = 0;
-
-            if (targetPixel.A == 0)
-            {
-                // If both pixels are completly transparent we don't compare other colors
-                if (pixelColor.A == 0)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
-                }
-            }
-            score += Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
-            score += Math.Abs((targetPixel.R - pixelColor.R) / (double)255);
-            score += Math.Abs((targetPixel.G - pixelColor.G) / (double)255);
-            score += Math.Abs((targetPixel.B - pixelColor.B) / (double)255);
-
-            return score;
-        }
-
-        private Bitmap DrawShape(Shape shapeToDraw)
-        {
-            Bitmap currentIterationBitmap = new(_lastImageBitmap);
-            using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
-            {
-                //if (_random.NextDouble() < _parameters.UseBackgroundColorChance)
-                //{
-                //    currentIterationGraphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
-                //    shapeColor = _parameters.BackgroundColor;
-                //}
-
-                //var x = shapePosition.X;
-                //var y = shapePosition.Y;
-                //var width = shapeSize.Width;
-                //var height = shapeSize.Height;
-                //var brush = new SolidBrush(shapeColor);
-                
-                ////TODO: Fix with SOLID and add tests 
-                //if (shapeToDraw == Shape.Ellipse)
-                //{
-                //    currentIterationGraphics.FillEllipse(brush, x, y, width, height);
-                //}
-                //else if (shapeToDraw == Shape.Circle)
-                //{
-                //    currentIterationGraphics.FillEllipse(brush, x, y, width, width);
-                //}
-                //else if (shapeToDraw == Shape.Triangle)
-                //{
-                //    var trianglePoints = new Point[]
-                //    {
-                //        new(x, y),
-                //        new(x + width, y),
-                //        new(x + width/2, y + height),
-                //    };
-                //    currentIterationGraphics.FillPolygon(brush, trianglePoints);
-                //}
-                //else if (shapeToDraw == Shape.Rectangle)
-                //{
-                //    currentIterationGraphics.FillRectangle(brush, new Rectangle(x, y, width, height));
-                //}
-                //brush.Dispose();
-
-                //var pathToImage = $"{_pathToStorage}\\{_currentIteration}.png";
-                //currentIterationBitmap.Save(pathToImage);
-                return currentIterationBitmap;
-            }
         }
 
         private AlgorithmResult CalculateResult()
@@ -193,7 +85,7 @@ namespace Logic
             if (_currentIteration % _parameters.ImagePresentationInterval == 0 ||
                 _currentIteration < 20)
             {
-                _lastImageBitmap.Save(pathToImage);
+                _latestImageBitmap.Save(pathToImage);
             }
             else
             {
@@ -211,23 +103,23 @@ namespace Logic
         private void Initialize()
         {
             _targetImageBitmap = new(_pathToTargetImage);
-            _lastImageBitmap = new(_targetImageBitmap.Width, _targetImageBitmap.Height, PixelFormat.Format32bppArgb);
-
-            Graphics initialGraphics = Graphics.FromImage(_lastImageBitmap);
-            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new System.Drawing.Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
+            InitializeBackgroundImage();
 
             Id = DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString();
             Directory.CreateDirectory(StorageHelper.GetPathForIterationsFolderById(Id));
-            _lastImageBitmap.Save(StorageHelper.GetPathForIterationImage(Id, _currentIteration));
+            _latestImageBitmap.Save(StorageHelper.GetPathForIterationImage(Id, _currentIteration));
 
-            initialGraphics.Dispose();
-
-            _lastScore = GetScore(_lastImageBitmap,
-             new Size() { Height = _targetImageBitmap.Height, Width = _targetImageBitmap.Width },
-             new Point() { X = 0, Y = 0 }
-            );
+            _lastScore = _scoreCalculator.GetScoreForWholeImage(_latestImageBitmap, _targetImageBitmap);
 
             _shapeFactory = new ShapeFactory(_parameters, _targetImageBitmap.Width, _targetImageBitmap.Height);
+        }
+
+        private void InitializeBackgroundImage()
+        {
+            _latestImageBitmap = new(_targetImageBitmap.Width, _targetImageBitmap.Height, PixelFormat.Format32bppArgb);
+            Graphics initialGraphics = Graphics.FromImage(_latestImageBitmap);
+            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new System.Drawing.Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
+            initialGraphics.Dispose();
         }
 
         public int GetMaxIterations()

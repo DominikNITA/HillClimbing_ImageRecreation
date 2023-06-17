@@ -12,23 +12,15 @@ namespace Logic.Tests
     public class ShapeTester
     {
         private const int IMAGE_WIDTH = 100, IMAGE_HEIGHT = 100;
-        private static Color BACKGROUND_COLOR = Color.LightGray;
-        private static Color SHAPE_COLOR = Color.DarkBlue;
-        public string CreateImage(Type shapeType, Color color, Size size, Point position, double rotation, bool isUsingBackgroundColor)
+        public static Color BACKGROUND_COLOR = Color.LightGray;
+        public static Color SHAPE_COLOR = Color.DarkBlue;
+        public static Color BOUNDING_BOX_COLOR = Color.FromArgb(50, Color.Red);
+        public string CreateBase64Image(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor)
         {
-            var image = new Bitmap(IMAGE_WIDTH, IMAGE_HEIGHT, PixelFormat.Format32bppArgb);
+            Bitmap image;
+            Graphics initialGraphics;
 
-            Graphics initialGraphics = Graphics.FromImage(image);
-            initialGraphics.FillRectangle(new SolidBrush(BACKGROUND_COLOR), new System.Drawing.Rectangle(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
-
-            var shapeToDraw = ShapeFactory.CreateShape(shapeType, SHAPE_COLOR, size, position, (float)rotation, isUsingBackgroundColor);
-            shapeToDraw.Draw(initialGraphics);
-
-            var outineBrush = new SolidBrush(Color.FromArgb(50, Color.Red));
-            foreach (var pixel in shapeToDraw.GetModifiedPixels(image))
-            {
-                initialGraphics.FillRectangle(outineBrush, pixel.X, pixel.Y, 1, 1);
-            }
+            CreateTestImage(shapeType, size, position, rotation, isUsingBackgroundColor, out image, out initialGraphics);
 
             string result;
             using (var ms = new MemoryStream())
@@ -39,9 +31,28 @@ namespace Logic.Tests
 
             initialGraphics.Dispose();
             image.Dispose();
-            outineBrush.Dispose();
 
             return result;
+        }
+
+        public void CreateTestImage(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor, out Bitmap image, out Graphics initialGraphics)
+        {
+            image = new Bitmap(IMAGE_WIDTH, IMAGE_HEIGHT, PixelFormat.Format32bppArgb);
+            initialGraphics = Graphics.FromImage(image);
+            var shapeBrush = new SolidBrush(BACKGROUND_COLOR);
+            initialGraphics.FillRectangle(shapeBrush, new System.Drawing.Rectangle(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT));
+
+            var shapeToDraw = ShapeFactory.CreateShape(shapeType, SHAPE_COLOR, size, position, (float)rotation, isUsingBackgroundColor);
+            shapeToDraw.Draw(initialGraphics);
+
+            var outlineBrush = new SolidBrush(BOUNDING_BOX_COLOR);
+            foreach (var pixel in shapeToDraw.GetModifiedPixels(image))
+            {
+                initialGraphics.FillRectangle(outlineBrush, pixel.X, pixel.Y, 1, 1);
+            }
+
+            shapeBrush.Dispose();
+            outlineBrush.Dispose();
         }
     }
 

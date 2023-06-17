@@ -25,7 +25,7 @@
             <Descriptions Size="small" Column="3" Title="Image analysis">
                 <DescriptionsItem Title="Width" Span="1">@Analysis?.Width</DescriptionsItem>
                 <DescriptionsItem Title="Pixel Count" Span="1">@Analysis?.PixelCount</DescriptionsItem>
-                <DescriptionsItem Title="Alpha channel" Span="1">@(Analysis.ContainsAlpha ? "True" : "False")</DescriptionsItem>
+                <DescriptionsItem Title="Alpha channel" Span="1">@(Analysis?.ContainsAlpha ?? false ? "True" : "False")</DescriptionsItem>
                 <DescriptionsItem Title="Height" Span="1">@Analysis?.Height</DescriptionsItem>
                 <DescriptionsItem Title="Distinct colors" Span="1">@Analysis?.ColorCount</DescriptionsItem>
             </Descriptions>

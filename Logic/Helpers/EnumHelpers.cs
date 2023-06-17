@@ -26,19 +26,19 @@ namespace Logic.Helpers
                            Value = x?.ToString() ?? string.Empty
                        }).ToList();
         }
-        public static string GetDescription(this Enum GenericEnum)
+        public static string GetDescription(this Enum genericEnum)
         {
-            Type genericEnumType = GenericEnum.GetType();
-            MemberInfo[] memberInfo = genericEnumType.GetMember(GenericEnum.ToString());
+            Type genericEnumType = genericEnum.GetType();
+            MemberInfo[] memberInfo = genericEnumType.GetMember(genericEnum.ToString());
             if ((memberInfo != null && memberInfo.Length > 0))
             {
-                var _Attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
-                if ((_Attribs != null && _Attribs.Count() > 0))
+                var attribs = memberInfo[0].GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), false);
+                if ((attribs != null && attribs.Count() > 0))
                 {
-                    return ((System.ComponentModel.DescriptionAttribute)_Attribs.ElementAt(0)).Description;
+                    return ((System.ComponentModel.DescriptionAttribute)attribs.ElementAt(0)).Description;
                 }
             }
-            return GenericEnum.ToString();
+            return genericEnum.ToString();
         }
 
     }

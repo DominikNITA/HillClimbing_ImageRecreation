@@ -39,9 +39,8 @@
         }
 
         var shapeTester = new Logic.Tests.ShapeTester();
-        _testImage = shapeTester.CreateImage(
+        _testImage = shapeTester.CreateBase64Image(
             _shapeParameters.Type,
-            System.Drawing.Color.Goldenrod,
             new System.Drawing.Size() { Width = 40, Height = 22 },
             new System.Drawing.Point() { X = 30, Y = 55 },
             _shapeParameters.Rotation,
