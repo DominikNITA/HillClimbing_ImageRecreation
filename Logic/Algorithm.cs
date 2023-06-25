@@ -72,7 +72,6 @@ namespace Logic
             {
                 _latestImageBitmap = currentIterationBitmap;
                 _lastScore += scoreDifference;
-                currentIterationBitmap.Dispose();
                 return true;
             }
             currentIterationBitmap.Dispose();

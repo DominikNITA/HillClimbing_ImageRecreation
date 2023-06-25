@@ -14,7 +14,7 @@ namespace Logic
                 Height = bitmap.Height,
                 Width = bitmap.Width,
                 ColorCount = CountDistinctColors(bitmap),
-                ContainsAlpha = true
+                ContainsAlpha = DetectAlphaComponent(bitmap),
             };
         }
 
@@ -33,6 +33,22 @@ namespace Logic
                 }
             }
             return colors.Distinct().Count();
+        }
+
+        private static bool DetectAlphaComponent(Bitmap bitmap)
+        {
+            for (int i = 0; i < bitmap.Width; i++)
+            {
+                for (int j = 0; j < bitmap.Height; j++)
+                {
+                    var pixel = bitmap.GetPixel(i, j);
+                    if (pixel.A == 0) 
+                    {
+                        return true;               
+                    }
+                }
+            }
+            return false;
         }
     }
 }

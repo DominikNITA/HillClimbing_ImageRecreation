@@ -55,6 +55,10 @@ namespace Logic.ScoreCalculator
                     return Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
                 }
             }
+            if(pixelColor.A == 0)
+            {
+                return 4;
+            }
             score += Math.Abs((targetPixel.A - pixelColor.A) / (double)255);
             score += Math.Abs((targetPixel.R - pixelColor.R) / (double)255);
             score += Math.Abs((targetPixel.G - pixelColor.G) / (double)255);
