@@ -79,7 +79,7 @@ namespace UnitTests
             Bitmap testImageBitmap = new(WIDTH, HEIGHT, PixelFormat.Format32bppArgb);
             Graphics testImageGraphics = Graphics.FromImage(testImageBitmap);
             testImageGraphics.FillRectangle(new SolidBrush(Color.FromArgb(10, Color.Black)), new System.Drawing.Rectangle(0, 0, WIDTH, HEIGHT));
-            // One pixel is black instead of being transparent
+            // One pixel is white instead of being partially transparent
             testImageGraphics.FillRectangle(new SolidBrush(Color.White), new System.Drawing.Rectangle(0, 0, 1, 1));
 
             Bitmap targetImageBitmap = new(WIDTH, HEIGHT, PixelFormat.Format32bppArgb);

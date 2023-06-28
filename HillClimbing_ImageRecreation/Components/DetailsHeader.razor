@@ -1,58 +1,60 @@
-﻿<PageHeader>
-    <PageHeaderTitle>@(((ApplicationState)CurrentState).GetDescription())</PageHeaderTitle>
+﻿@inject ApplicationStateProvider ApplicationStateProvider
+
+<PageHeader>
+    <PageHeaderTitle>@(((ApplicationState)ApplicationStateProvider.State).GetDescription())</PageHeaderTitle>
     <PageHeaderExtra>
-        @if (CurrentState is ApplicationState.AlgorithmWorking)
+        @if (ApplicationStateProvider.State is ApplicationState.AlgorithmWorking)
         {
-            <Button @onclick="@OnPause">
+            <Button @onclick="@(() => ApplicationStateProvider.State = ApplicationState.AlgorithmStopped)">
                 Stop!
             </Button>
         }
-        @if (CurrentState is ApplicationState.AlgorithmStopped)
+        @if (ApplicationStateProvider.State is ApplicationState.AlgorithmStopped)
         {
-            <Button @onclick="@OnResume">Resume!</Button>
+            <Button @onclick="@(() => ApplicationStateProvider.State = ApplicationState.AlgorithmWorking)">Resume!</Button>
         }
     </PageHeaderExtra>
     <PageHeaderContent>
-        @if (CurrentState is ApplicationState.SelectingImage)
+        @if (ApplicationStateProvider.State is ApplicationState.SelectingImage)
         {
             <div>
                 Upload image to start:
                 <InputFile OnChange="OnFileUpload" accept=".png,.jpg,.jpeg" />
             </div>
         }
-        @if (CurrentState is ApplicationState.SettingParameters)
+        @if (ApplicationStateProvider.State is ApplicationState.SettingParameters)
         {
             <Descriptions Size="small" Column="3" Title="Image analysis">
-                <DescriptionsItem Title="Width" Span="1">@Analysis?.Width</DescriptionsItem>
-                <DescriptionsItem Title="Pixel Count" Span="1">@Analysis?.PixelCount</DescriptionsItem>
-                <DescriptionsItem Title="Alpha channel" Span="1">@(Analysis?.ContainsAlpha ?? false ? "True" : "False")</DescriptionsItem>
-                <DescriptionsItem Title="Height" Span="1">@Analysis?.Height</DescriptionsItem>
-                <DescriptionsItem Title="Distinct colors" Span="1">@Analysis?.ColorCount</DescriptionsItem>
+                <DescriptionsItem Title="Width" Span="1">@ApplicationStateProvider.AnalysisResult?.Width</DescriptionsItem>
+                <DescriptionsItem Title="Pixel Count" Span="1">@ApplicationStateProvider.AnalysisResult?.PixelCount</DescriptionsItem>
+                <DescriptionsItem Title="Alpha channel" Span="1">@(ApplicationStateProvider.AnalysisResult?.ContainsAlpha ?? false ? "True" : "False")</DescriptionsItem>
+                    <DescriptionsItem Title="Height" Span="1">@ApplicationStateProvider.AnalysisResult?.Height</DescriptionsItem>
+                    <DescriptionsItem Title="Distinct colors" Span="1">@ApplicationStateProvider.AnalysisResult?.ColorCount</DescriptionsItem>
             </Descriptions>
         }
-        @if (CurrentState is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped)
+        @if (ApplicationStateProvider.State is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped)
         {
-            @if (CurrentState is ApplicationState.AlgorithmWorking)
+            @if (ApplicationStateProvider.State is ApplicationState.AlgorithmWorking)
             {
-                <Button @onclick="@OnPause">
+                <Button @onclick="@(() => ApplicationStateProvider.State = ApplicationState.AlgorithmStopped)">
                     Stop!
                 </Button>
             }
-            @if (CurrentState is ApplicationState.AlgorithmStopped)
+            @if (ApplicationStateProvider.State is ApplicationState.AlgorithmStopped)
             {
-                <Button @onclick="@OnResume">Resume!</Button>
+                <Button @onclick="@(() => ApplicationStateProvider.State = ApplicationState.AlgorithmWorking)">Resume!</Button>
             }
             <Descriptions Size="small" Column="2">
                 <DescriptionsItem Title="Iteration" Span="1">
-                    <Progress Percent=@(((double)AlgorithmResultList!.Last().Iteration/AlgorithmParameters!.MaxIterations)*100)
+                    <Progress Percent=@(((double)ApplicationStateProvider.AlgorithmResults!.Last().Iteration/ApplicationStateProvider.Parameters!.MaxIterations)*100)
                           ShowInfo="true"
-                          Format=@((d) => $"{AlgorithmResultList!.Last().Iteration}/{AlgorithmParameters!.MaxIterations}") />
+                              Format=@((d) => $"{ApplicationStateProvider.AlgorithmResults!.Last().Iteration}/{ApplicationStateProvider.Parameters!.MaxIterations}") />
                 </DescriptionsItem>
-                <DescriptionsItem Title="Score" Span="1">@Algorithm.GetScorePercentage(AlgorithmResultList?.Last().Score ?? double.MaxValue, Analysis?.Width, Analysis?.Height)%</DescriptionsItem>
+                <DescriptionsItem Title="Score" Span="1">@Algorithm.GetScorePercentage(ApplicationStateProvider.AlgorithmResults?.Last().Score ?? double.MaxValue, ApplicationStateProvider.AnalysisResult?.Width, ApplicationStateProvider.AnalysisResult?.Height)%</DescriptionsItem>
             </Descriptions>
         }
 
-        @if (CurrentState is ApplicationState.AlgorithmFinished)
+        @if (ApplicationStateProvider.State is ApplicationState.AlgorithmFinished)
         {
             <Button @onclick="@OnGenerateTimelapse">Generate timelapse video!</Button>    
         }
@@ -62,25 +64,7 @@
 
 @code {
     [Parameter]
-    public AnalysisResult? Analysis { get; set; }
-
-    [Parameter]
-    public ApplicationState CurrentState { get; set; }
-
-    [Parameter]
-    public List<AlgorithmResult>? AlgorithmResultList { get; set; }
-
-    [Parameter]
-    public AlgorithmParameters? AlgorithmParameters { get; set; }
-
-    [Parameter]
     public EventCallback<InputFileChangeEventArgs> OnFileUpload { get; set; }
-
-    [Parameter]
-    public Action OnPause { get; set; }
-
-    [Parameter]
-    public Action OnResume { get; set; }
 
     [Parameter]
     public Action OnGenerateTimelapse { get; set; }

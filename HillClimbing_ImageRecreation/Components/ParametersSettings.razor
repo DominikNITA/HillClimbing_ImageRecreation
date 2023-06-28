@@ -1,5 +1,5 @@
 ﻿@using System.Drawing
-
+@inject ApplicationStateProvider ApplicationStateProvider
 <div>
     <Title>Algorithm parameters</Title>
     <Form Model="@_parametersModel" OnFinish="@HandleValidSubmit">
@@ -45,12 +45,6 @@
     private AlgorithmParameters _parametersModel = new();
     private string? _previousBackgroundColorString;
 
-    [Parameter]
-    public EventCallback<AlgorithmParameters> OnAlgorithmParametersSet { get; set; }
-
-    [Parameter]
-    public AnalysisResult? Analysis { get; set; }
-
     protected override void OnParametersSet()
     {
         _parametersModel.ShapeSizeLimits = (1, GetMaxShapeLimit() / 2);
@@ -62,13 +56,13 @@
 
     private int GetMaxShapeLimit()
     {
-        return Math.Max(Analysis?.Width ?? 1, Analysis?.Height ?? 1);
+        return Math.Max(ApplicationStateProvider.AnalysisResult?.Width ?? 1, ApplicationStateProvider.AnalysisResult?.Height ?? 1);
     }
 
-    private async void HandleValidSubmit()
+    private void HandleValidSubmit()
     {
         System.Console.WriteLine(_parametersModel.PropertiesToString());
-        await OnAlgorithmParametersSet.InvokeAsync(_parametersModel);
+        ApplicationStateProvider.Parameters = _parametersModel;
     }
 
     public void OnColorChanged(ChangeEventArgs e)
@@ -77,7 +71,7 @@
         _parametersModel.BackgroundBaseColorString = e.Value?.ToString() + "ff";
     }
 
-    private void onUseTransparentColorChange(ChangeEventArgs args)
+    private void OnUseTransparentColorChange(ChangeEventArgs args)
     {
         if ((bool)(args.Value ?? false))
         {

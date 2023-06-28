@@ -1,102 +1,82 @@
 ﻿@page "/main"
 @using System.ComponentModel
+@implements IDisposable
 @inject IWebHostEnvironment Environment
+@inject ApplicationStateProvider ApplicationStateProvider
 
 <PageTitle>Hill Climbing Algorithm</PageTitle>
 
-<DetailsHeader CurrentState="_currentState"
-               OnFileUpload="LoadFiles"
-               Analysis="_analysisResult"
-               AlgorithmResultList="_algorithmResults"
-               OnPause=@(() => _currentState = ApplicationState.AlgorithmStopped)
-               OnResume="@PerformAlgorithmCalculations"
-               AlgorithmParameters="_algorithmParameters"
+<DetailsHeader OnFileUpload="LoadFiles"
                OnGenerateTimelapse="@(async () => {
-                   _currentState = ApplicationState.GeneratingTimelapse;
-                   StateHasChanged();
-                   _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(_algorithm?.Id));
-                   _currentState = ApplicationState.TimelapseGenerated;
-                   StateHasChanged();})">
+                   ApplicationStateProvider.State = ApplicationState.GeneratingTimelapse;
+                   _pathToLatestTimeLapse = await (new VideoGenerator().GenerateTimelapseVideo(ApplicationStateProvider.Algorithm?.Id));
+                   ApplicationStateProvider.State = ApplicationState.TimelapseGenerated;
+               })">
 </DetailsHeader>
 
-@if (_currentState is ApplicationState.SettingParameters)
+@if (ApplicationStateProvider.State is ApplicationState.SettingParameters)
 {
     <GridRow Justify="space-around">
         <GridCol>
             <div>
                 <Title>Uploaded image:</Title>
-                <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+                <ImageDisplay Path=@_path></ImageDisplay>
             </div>
         </GridCol>
         <GridCol>
-            <ParametersSettings Analysis="@_analysisResult" OnAlgorithmParametersSet="@CreateAlgorithm"></ParametersSettings>
+            <ParametersSettings></ParametersSettings>
         </GridCol>
     </GridRow>
 }
 
-@if (_currentState is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped or ApplicationState.AlgorithmFinished)
+@if (ApplicationStateProvider.State is ApplicationState.AlgorithmWorking or ApplicationState.AlgorithmStopped or ApplicationState.AlgorithmFinished)
 {
     <GridRow Justify="center">
-        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
-        <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_pathToLatestImage ?? ""))">
+        <ImageDisplay Path=@_path></ImageDisplay>
+        <ImageDisplay Path=@_pathToLatestImage></ImageDisplay>
     </GridRow>
 
-    if (_currentState is ApplicationState.AlgorithmFinished)
+    if (ApplicationStateProvider.State is ApplicationState.AlgorithmFinished)
     {
-        <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+        <ScoreChart></ScoreChart>
     }
 }
 
-@if (_currentState == ApplicationState.GeneratingTimelapse)
+@if (ApplicationStateProvider.State == ApplicationState.GeneratingTimelapse)
 {
     <Spin Spinning="true" Tip="Generating Timelapse"></Spin>
-    <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+    <ScoreChart></ScoreChart>
 }
 
-@if (_currentState == ApplicationState.TimelapseGenerated)
+@if (ApplicationStateProvider.State == ApplicationState.TimelapseGenerated)
 {
     if (_pathToLatestTimeLapse != null)
     {
         <GridRow Justify="center">
-            <img src="data:image/gif;base64,@Convert.ToBase64String(File.ReadAllBytes(_path))">
+            <ImageDisplay Path=@_path></ImageDisplay>
             <video class="timelapse"
-           width="@_analysisResult?.Width"
-           height="@_analysisResult?.Height"
-           autoplay
-           controls>
+                   width="@ApplicationStateProvider.AnalysisResult?.Width"
+                   height="@ApplicationStateProvider.AnalysisResult?.Height"
+                   autoplay
+                   controls>
                 <source src="@StorageHelper.ConvertPathToRelativeToWwwroot(_pathToLatestTimeLapse)" type="video/mp4">
             </video>
         </GridRow>
         <GridRow Justify="center">
             <GridCol Span="12">
-                <ScoreChart AlgorithmResults="_algorithmResults" Analysis="_analysisResult"></ScoreChart>
+                <ScoreChart></ScoreChart>
             </GridCol>
         </GridRow>
-
     }
 }
 
 @code {
     string _path = "";
-    AnalysisResult? _analysisResult;
-    AlgorithmParameters? _algorithmParameters;
-    List<AlgorithmResult> _algorithmResults = new();
     string? _pathToLatestImage;
     string? _pathToLatestTimeLapse;
-    Algorithm? _algorithm;
-    ApplicationState _currentState = ApplicationState.SelectingImage;
-
-    public class ChartData
-    {
-        public int XValue { get; set; }
-        public double YValue { get; set; }
-    }
 
     private async void LoadFiles(InputFileChangeEventArgs e)
     {
-        _analysisResult = null;
-        _algorithmResults = new();
-
         var trustedFileNameForFileStorage = StorageHelper.CreateRandomFileNameWithExtension(e.File.Name);
         _path = StorageHelper.GetPathForFileInUnsafeUploads(trustedFileNameForFileStorage);
 
@@ -105,35 +85,31 @@
             await e.File.OpenReadStream().CopyToAsync(fs);
         }
 
-        _currentState = ApplicationState.AnalyzingImage;
-        _analysisResult = Analyzer.AnalyzeImage(_path);
-
-        _currentState = ApplicationState.SettingParameters;
-        StateHasChanged();
+        ApplicationStateProvider.State = ApplicationState.AnalyzingImage;
+        ApplicationStateProvider.AnalysisResult = Analyzer.AnalyzeImage(_path);
+        ApplicationStateProvider.State = ApplicationState.SettingParameters;
     }
 
-    void CreateAlgorithm(AlgorithmParameters algorithmParameters)
+    void CreateAlgorithm()
     {
-        _algorithmParameters = algorithmParameters;
-        _algorithm = new Algorithm(algorithmParameters, _path);
-        _currentState = ApplicationState.AlgorithmWorking;
-        PerformAlgorithmCalculations();
+        System.Console.WriteLine(_path);
+        ApplicationStateProvider.Algorithm = new Algorithm(ApplicationStateProvider.Parameters, _path);
+        ApplicationStateProvider.State = ApplicationState.AlgorithmWorking;
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender == false &&
-            _currentState == ApplicationState.AlgorithmWorking
+            ApplicationStateProvider.State == ApplicationState.AlgorithmWorking
         )
         {
-            if (_algorithmResults.LastOrDefault()?.Iteration < _algorithm?.GetMaxIterations())
+            if (ApplicationStateProvider.AlgorithmResults?.Count < 1 || ApplicationStateProvider.AlgorithmResults.LastOrDefault()?.Iteration < ApplicationStateProvider.Algorithm?.GetMaxIterations())
             {
                 PerformAlgorithmCalculations();
             }
             else
             {
-                _currentState = ApplicationState.AlgorithmFinished;
-                StateHasChanged();
+                ApplicationStateProvider.State = ApplicationState.AlgorithmFinished;
             }
         }
         return base.OnAfterRenderAsync(firstRender);
@@ -142,17 +118,28 @@
 
     void PerformAlgorithmCalculations()
     {
-        _currentState = ApplicationState.AlgorithmWorking;
-
-        var result = _algorithm!.CalculateNextImage();
+        var result = ApplicationStateProvider.Algorithm!.CalculateNextImage();
 
         if (result.PathToImage != null)
         {
             _pathToLatestImage = result.PathToImage;
         }
 
-        _algorithmResults.Add(result);
+        ApplicationStateProvider.AddAlgorithmResult(result);
 
         StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        ApplicationStateProvider.OnStateChange += StateHasChanged;
+        ApplicationStateProvider.OnParametersChange += CreateAlgorithm;
+    }
+
+    public void Dispose()
+    {
+        ApplicationStateProvider.OnStateChange -= StateHasChanged;
+        ApplicationStateProvider.OnParametersChange -= CreateAlgorithm;
+        ApplicationStateProvider.ResetState();
     }
 }

@@ -1,7 +1,4 @@
 using HillClimbing_ImageRecreation.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +7,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ShapeTypesProvider>();
+builder.Services.AddScoped<ApplicationStateProvider>();
 builder.Services.AddAntDesign();
 
 var app = builder.Build();

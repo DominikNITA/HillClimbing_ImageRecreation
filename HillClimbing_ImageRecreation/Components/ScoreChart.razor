@@ -1,20 +1,17 @@
 ﻿@using ApexCharts;
+@inject ApplicationStateProvider ApplicationStateProvider
 
 <ApexChart @ref="_chart" TItem="AlgorithmResult" Title="Score by iteration" Options="_options">
     <ApexPointSeries TItem="AlgorithmResult"
-                     Items="AlgorithmResults"
+                     Items="ApplicationStateProvider.AlgorithmResults"
                      Name="Score"
                      SeriesType="SeriesType.Line"
                      XValue="@(e => e.Iteration)"
-                     YValue="@(e => (decimal)Algorithm.GetScorePercentage(e.Score ?? 0,Analysis?.Width, Analysis?.Height))" />
+                     YValue="@(e => (decimal)Algorithm.GetScorePercentage(e.Score ?? 0,
+                            ApplicationStateProvider.AnalysisResult?.Width,
+                            ApplicationStateProvider.AnalysisResult?.Height))" />
 </ApexChart>
 @code {
-    [Parameter]
-    public IEnumerable<AlgorithmResult> AlgorithmResults { get; set; }
-
-    [Parameter]
-    public AnalysisResult Analysis { get; set; }
-
     private ApexChart<AlgorithmResult>? _chart;
 
     private ApexChartOptions<AlgorithmResult> _options = new();
@@ -27,7 +24,7 @@
                 TickAmount = 10,
                 DecimalsInFloat = 0
             };
-                    _options.Tooltip = new()
+        _options.Tooltip = new()
             {
                 Y = new()
                 {
@@ -38,8 +35,8 @@
         _options.Yaxis.Add(new()
             {
                 DecimalsInFloat = 2,
-                Title = new() { Text = "Score"},
-                Labels = new YAxisLabels() { Formatter = @"function(value) { return value + '%' }" }           
+                Title = new() { Text = "Score" },
+                Labels = new YAxisLabels() { Formatter = @"function(value) { return value + '%' }" }
             });
     }
 }
