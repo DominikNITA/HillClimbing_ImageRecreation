@@ -12,7 +12,7 @@ namespace UnitTests
 {
     public class BoundingBoxTests
     {
-        private class BarTestData : IEnumerable<object[]>
+        private class BoundingBoxTestData : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()
             {
@@ -33,14 +33,13 @@ namespace UnitTests
         }
 
         [Theory]
-        [ClassData(typeof(BarTestData))]
-        public void BarTest(int rotationAngle, Type shapeType)
+        [ClassData(typeof(BoundingBoxTestData))]
+        public void BoundingBoxTest(int rotationAngle, Type shapeType)
         {
-            var shapeTester = new ShapeTester();
             Bitmap image;
             Graphics initialGraphics;
 
-            shapeTester.CreateTestImage(
+            ShapeTester.CreateTestImage(
                 shapeType,
                 new Size() { Width = 40, Height = 22 },
                 new Point() { X = 30, Y = 55 },

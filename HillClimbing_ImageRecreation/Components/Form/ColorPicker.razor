@@ -60,7 +60,7 @@
         base.OnParametersSet();
     }
 
-    public void OnColorChanged(object _o = null)
+    public void OnColorChanged(object? _o = null)
     {
         UpdatePreviewColor();
         OnChangeCallback.InvokeAsync(_previewColor);

@@ -34,9 +34,9 @@ namespace Logic.Models
         [MustHaveOneElement("Select at least one shape")]
         public IEnumerable<Type>? Shapes { get; set; }
         [Required]
-        public (double, double) ShapeSizeLimits { get; set; }
-        public int MinShapeSize { get { return (int)ShapeSizeLimits.Item1; } }
-        public int MaxShapeSize { get { return (int)ShapeSizeLimits.Item2; } }
+        public (double Min, double Max) ShapeSizeLimits { get; set; }
+        public int MinShapeSize { get { return (int)ShapeSizeLimits.Min; } }
+        public int MaxShapeSize { get { return (int)ShapeSizeLimits.Max; } }
         //TODO: Add parameters for bezier curve
         [Required]
         public bool AllowRotation { get; set; }

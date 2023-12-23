@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace Logic.Tests
 {
-    public class ShapeTester
+    public static class ShapeTester
     {
         private const int IMAGE_WIDTH = 100, IMAGE_HEIGHT = 100;
         public static Color BACKGROUND_COLOR = Color.LightGray;
         public static Color SHAPE_COLOR = Color.DarkBlue;
         public static Color BOUNDING_BOX_COLOR = Color.FromArgb(50, Color.Red);
-        public string CreateBase64Image(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor)
+        public static string CreateBase64Image(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor)
         {
             Bitmap image;
             Graphics initialGraphics;
@@ -35,7 +35,7 @@ namespace Logic.Tests
             return result;
         }
 
-        public void CreateTestImage(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor, out Bitmap image, out Graphics initialGraphics)
+        public static void CreateTestImage(Type shapeType, Size size, Point position, double rotation, bool isUsingBackgroundColor, out Bitmap image, out Graphics initialGraphics)
         {
             image = new Bitmap(IMAGE_WIDTH, IMAGE_HEIGHT, PixelFormat.Format32bppArgb);
             initialGraphics = Graphics.FromImage(image);

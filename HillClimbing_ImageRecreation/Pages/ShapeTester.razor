@@ -15,9 +15,10 @@
                       Min="0"
                       Max="360"
                       Step="1"
-    @bind-Value=@_shapeParameters.Rotation
+                      @bind-Value=@_shapeParameters.Rotation
                       OnChange="UpdateShapeImage"
-                      Style="width:120px"></AntDesign.Slider>
+                      Style="width:120px">
+    </AntDesign.Slider>
 
 </Form>
 
@@ -32,20 +33,19 @@
 
     void UpdateShapeImage(double newValue = 0)
     {
-        Console.WriteLine("Test");
         if (_shapeParameters.Type == null)
         {
             return;
         }
 
-        var shapeTester = new Logic.Tests.ShapeTester();
-        _testImage = shapeTester.CreateBase64Image(
+        _testImage = Logic.Tests.ShapeTester.CreateBase64Image(
             _shapeParameters.Type,
             new System.Drawing.Size() { Width = 40, Height = 22 },
             new System.Drawing.Point() { X = 30, Y = 55 },
             _shapeParameters.Rotation,
             false
             );
+
         StateHasChanged();
     }
 

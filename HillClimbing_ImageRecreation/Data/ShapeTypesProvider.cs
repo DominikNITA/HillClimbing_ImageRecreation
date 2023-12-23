@@ -14,11 +14,15 @@ namespace HillClimbing_ImageRecreation.Data
         public List<ShapeTypeWithDisplayName> ShapeTypesWithDisplayNames { get; init; }
         public ShapeTypesProvider()
         {
+            IShape shape;
+
             ShapeTypesWithDisplayNames = new List<ShapeTypeWithDisplayName>();
             var shapeTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => typeof(Shape).IsAssignableFrom(p) && p.IsClass && !p.IsAbstract);
-
+                            .Where(p => typeof(Shape).IsAssignableFrom(p) && p.IsClass && !p.IsAbstract);
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var types = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes());
             foreach (var shapeType in shapeTypes)
             {
                 var displayNameProperty = shapeType.GetProperty("DisplayName", BindingFlags.Static | BindingFlags.Public);

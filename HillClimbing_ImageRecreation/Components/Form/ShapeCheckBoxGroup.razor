@@ -35,9 +35,10 @@
                 }
             );
         }
+        OnChange();
     }
 
-    private async void OnChange(bool b)
+    private async void OnChange()
     {
         await OnChangeCallback.InvokeAsync(CheckableShapes.Where(x => x.IsSelected).Select(x => x.ShapeType));
     }

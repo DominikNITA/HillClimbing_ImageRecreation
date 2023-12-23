@@ -47,6 +47,11 @@
 
     protected override void OnParametersSet()
     {
+        SetInitialAlgorithmParameters();
+    }
+
+    private void SetInitialAlgorithmParameters()
+    {
         _parametersModel.ShapeSizeLimits = (1, GetMaxShapeLimit() / 2);
         _parametersModel.BackgroundBaseColorString = "#e1d9d9ff";
         _parametersModel.MaxIterations = 1000;

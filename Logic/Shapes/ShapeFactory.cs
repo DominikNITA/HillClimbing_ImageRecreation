@@ -50,10 +50,9 @@ namespace Logic.Shapes
                 isBackgroundColor);
         }
 
-
         private (Color color, bool isBackgroundColor) GetRandomShapeColor()
         {
-            if (_random.NextDouble() < _algorithmParameters.UseBackgroundColorChance)
+            if (ShouldUseBackgroundColor())
             {
                 return (_algorithmParameters.BackgroundColor, true);
             }
@@ -64,6 +63,11 @@ namespace Logic.Shapes
                 _random.Next(0, 256),
                 _random.Next(0, 256)
                 ), false);
+        }
+
+        private bool ShouldUseBackgroundColor()
+        {
+            return _random.NextDouble() < _algorithmParameters.UseBackgroundColorChance;
         }
 
         private Point GetRandomShapePosition(Size shapeSize)
