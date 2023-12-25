@@ -12,11 +12,8 @@ namespace Logic.Models
 {
     public class AlgorithmParameters
     {
-        [Required]
         public int MaxIterations { get; set; }
-        
-        [Required]
-        [StringLength(9)]
+
         public string BackgroundBaseColorString { get; set; } = string.Empty;
         public Color BackgroundColor
         {
@@ -30,26 +27,33 @@ namespace Logic.Models
                     );
             }
         }
-        [Required]
-        [MustHaveOneElement("Select at least one shape")]
-        public IEnumerable<Type>? Shapes { get; set; }
-        [Required]
+
+        public IEnumerable<Type> Shapes { get; set; } = new List<Type>();
+
         public (double Min, double Max) ShapeSizeLimits { get; set; }
         public int MinShapeSize { get { return (int)ShapeSizeLimits.Min; } }
         public int MaxShapeSize { get { return (int)ShapeSizeLimits.Max; } }
-        //TODO: Add parameters for bezier curve
-        [Required]
-        public bool AllowRotation { get; set; }
-        [Required]
-        public bool AllowAlpha { get; set; }
-        [Range(0,1)]
-        public double UseBackgroundColorChance { get; set; }
-        [Required]
-        public bool UseColorDict { get; set; }
 
-        /// <summary>
-        /// Every how many iterations the generated image should be saved and sent back to user
-        /// </summary>
+        public bool AllowRotation { get; set; }
+
+        public bool AllowAlpha { get; set; }
+
+        public double UseBackgroundColorChance { get; set; }
+
+        public ColorDictParameters ColorDictParameters { get; set; }
+
         public int ImagePresentationInterval { get; set; }
+    }
+
+    public class ColorDictParameters
+    {
+        public bool Enabled { get; set; }
+
+        public double ResolutionDouble { get; set; }
+        public int Resolution { get { return (int)ResolutionDouble; } }
+
+        public int StartUsingFromIteration { get; set; }
+
+        public double UseColorDictChance { get; set; }
     }
 }

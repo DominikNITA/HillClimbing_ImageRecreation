@@ -40,6 +40,32 @@ namespace Logic
             Initialize();
         }
 
+        private void Initialize()
+        {
+            _targetImageBitmap = new(_pathToTargetImage);
+            InitializeBackgroundImage();
+
+            Id = DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString();
+            Directory.CreateDirectory(StorageHelper.GetPathForIterationsFolderById(Id));
+            _latestImageBitmap.Save(StorageHelper.GetPathForIterationImage(Id, _currentIteration));
+
+            _lastScore = _scoreCalculator.GetScoreForWholeImage(_latestImageBitmap, _targetImageBitmap);
+
+            _shapeFactory = new ShapeFactory(
+                _parameters,
+                _targetImageBitmap.Width,
+                _targetImageBitmap.Height,
+                new ColorBucketManager(_parameters.ColorDictParameters.Resolution, _targetImageBitmap));
+        }
+
+        private void InitializeBackgroundImage()
+        {
+            _latestImageBitmap = new(_targetImageBitmap.Width, _targetImageBitmap.Height, PixelFormat.Format32bppArgb);
+            Graphics initialGraphics = Graphics.FromImage(_latestImageBitmap);
+            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new System.Drawing.Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
+            initialGraphics.Dispose();
+        }
+
         public AlgorithmResult CalculateNextImage()
         {
             _currentIteration++;
@@ -59,7 +85,11 @@ namespace Logic
 
         private bool NextIteration()
         {
-            IShape shapeToDraw = _shapeFactory.CreateRandomShape();
+            IShape? shapeToDraw = _shapeFactory.CreateRandomShape();
+            if (shapeToDraw == null)
+            {
+                return false;
+            }
 
             Bitmap currentIterationBitmap = new(_latestImageBitmap);
             using (Graphics currentIterationGraphics = Graphics.FromImage(currentIterationBitmap))
@@ -97,28 +127,6 @@ namespace Logic
                 PathToImage = pathToImage,
                 Score = _lastScore
             };
-        }
-
-        private void Initialize()
-        {
-            _targetImageBitmap = new(_pathToTargetImage);
-            InitializeBackgroundImage();
-
-            Id = DateTime.Now.Ticks.ToString() + Guid.NewGuid().ToString();
-            Directory.CreateDirectory(StorageHelper.GetPathForIterationsFolderById(Id));
-            _latestImageBitmap.Save(StorageHelper.GetPathForIterationImage(Id, _currentIteration));
-
-            _lastScore = _scoreCalculator.GetScoreForWholeImage(_latestImageBitmap, _targetImageBitmap);
-
-            _shapeFactory = new ShapeFactory(_parameters, _targetImageBitmap.Width, _targetImageBitmap.Height);
-        }
-
-        private void InitializeBackgroundImage()
-        {
-            _latestImageBitmap = new(_targetImageBitmap.Width, _targetImageBitmap.Height, PixelFormat.Format32bppArgb);
-            Graphics initialGraphics = Graphics.FromImage(_latestImageBitmap);
-            initialGraphics.FillRectangle(new SolidBrush(_parameters.BackgroundColor), new System.Drawing.Rectangle(0, 0, _targetImageBitmap.Width, _targetImageBitmap.Height));
-            initialGraphics.Dispose();
         }
 
         public int GetMaxIterations()

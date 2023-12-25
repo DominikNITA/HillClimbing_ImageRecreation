@@ -1,4 +1,5 @@
 using HillClimbing_ImageRecreation.Data;
+using HillClimbing_ImageRecreation.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ShapeTypesProvider>();
 builder.Services.AddScoped<ApplicationStateProvider>();
+builder.Services.AddScoped<AlgorithmParametersValidator>();
 builder.Services.AddAntDesign();
 
 var app = builder.Build();

@@ -2,8 +2,8 @@
 @inject ApplicationStateProvider ApplicationStateProvider
 <div>
     <Title>Algorithm parameters</Title>
-    <Form Model="@_parametersModel" OnFinish="@HandleValidSubmit">
-        <DataAnnotationsValidator />
+    <EditForm OnValidSubmit="@HandleValidSubmit" Model=@_parametersModel>
+        <FluentValidationValidator ValidatorType="typeof(Validators.AlgorithmParametersValidator)" />
         <ValidationSummary />
 
         <Divider Orientation="left" Style="font-weight:bold">Used shapes</Divider>
@@ -30,7 +30,31 @@
             <Checkbox @bind-Checked="@_parametersModel.AllowAlpha">Allow Alpha</Checkbox>
         </div>
         <div>
-            <Checkbox Disabled>Use Color Dictionary (WIP)</Checkbox>
+            <Checkbox @bind-Checked="@_parametersModel.ColorDictParameters.Enabled">Use Color Dictionary</Checkbox>
+            @if (_parametersModel.ColorDictParameters.Enabled)
+            {
+                <div>
+                    <Text>Resolution</Text>
+                    <Slider @bind-Value="_parametersModel.ColorDictParameters.ResolutionDouble"
+                            TValue="double"
+                            Min="1"
+                            Max="128">
+                    </Slider>
+                    <Text>Start using from iteration</Text>
+                    <AntDesign.InputNumber TValue="int"
+                                           Min="0"
+                                           Max="_parametersModel.MaxIterations"
+                    @bind-Value=@_parametersModel.ColorDictParameters.StartUsingFromIteration>
+                    </AntDesign.InputNumber>
+@*                    <Text>Chance of using color from color dict</Text>
+                    <Slider @bind-Value="_parametersModel.ColorDictParameters.UseColorDictChance"
+                            TValue="double"
+                            Min="0.01"
+                            Max="1"
+                            Step="0.01">
+                    </Slider>*@
+                </div>
+            }
         </div>
 
         <Divider></Divider>
@@ -39,7 +63,7 @@
                 <Button HtmlType="submit" @onclick=@(() => System.Console.WriteLine(_parametersModel.PropertiesToString()))>Start!</Button>
             </GridCol>
         </GridRow>
-    </Form>
+    </EditForm>
 </div>
 @code {
     private AlgorithmParameters _parametersModel = new();
@@ -57,6 +81,13 @@
         _parametersModel.MaxIterations = 1000;
         _parametersModel.ImagePresentationInterval = 50;
         _parametersModel.UseBackgroundColorChance = 0.025;
+        _parametersModel.ColorDictParameters = new()
+            {
+                Enabled = false,
+                ResolutionDouble = 5,
+                StartUsingFromIteration = 100,
+                UseColorDictChance = 0.8,
+            };
     }
 
     private int GetMaxShapeLimit()

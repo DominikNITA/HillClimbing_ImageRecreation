@@ -14,16 +14,18 @@ namespace Logic.Shapes
         AlgorithmParameters _algorithmParameters;
         int _bitmapWidth, _bitmapHeight;
         Random _random;
+        ColorBucketManager? _colorBucketManager;
 
-        public ShapeFactory(AlgorithmParameters algorithmParameters, int bitmapWidth, int bitmapHeight)
+        public ShapeFactory(AlgorithmParameters algorithmParameters, int bitmapWidth, int bitmapHeight, ColorBucketManager? colorBucketManager)
         {
             _algorithmParameters = algorithmParameters;
             _bitmapWidth = bitmapWidth;
             _bitmapHeight = bitmapHeight;
             _random = new Random();
+            _colorBucketManager = colorBucketManager;
         }
 
-        public IShape CreateRandomShape()
+        public IShape? CreateRandomShape()
         {
             int index = _random.Next(_algorithmParameters.Shapes.Count());
 
@@ -40,9 +42,9 @@ namespace Logic.Shapes
                 isBackgroundColor);
         }
 
-        public static IShape CreateShape(Type shapeType, Color color, Size size, Point position, float rotation, bool isBackgroundColor)
+        public static IShape? CreateShape(Type shapeType, Color color, Size size, Point position, float rotation, bool isBackgroundColor)
         {
-            return (IShape)Activator.CreateInstance(shapeType,
+            return (IShape?)Activator.CreateInstance(shapeType,
                 color,
                 size,
                 position,
@@ -57,6 +59,17 @@ namespace Logic.Shapes
                 return (_algorithmParameters.BackgroundColor, true);
             }
 
+            if (ShouldUseColorDict())
+            {
+                var randomColor = _colorBucketManager!.GetRandomColor(0.0005);
+                return (Color.FromArgb(
+                     _algorithmParameters.AllowAlpha ? _random.Next(1, 256) : 255,
+                     randomColor.R,
+                     randomColor.G,
+                     randomColor.B
+                     ), false);
+            }
+
             return (Color.FromArgb(
                 _algorithmParameters.AllowAlpha ? _random.Next(1, 256) : 255,
                 _random.Next(0, 256),
@@ -68,6 +81,12 @@ namespace Logic.Shapes
         private bool ShouldUseBackgroundColor()
         {
             return _random.NextDouble() < _algorithmParameters.UseBackgroundColorChance;
+        }
+
+        private bool ShouldUseColorDict()
+        {
+            return _algorithmParameters.ColorDictParameters.Enabled &&
+                _random.NextDouble() < _algorithmParameters.ColorDictParameters.UseColorDictChance;
         }
 
         private Point GetRandomShapePosition(Size shapeSize)

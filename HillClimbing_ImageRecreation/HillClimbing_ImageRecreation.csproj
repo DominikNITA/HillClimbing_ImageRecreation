@@ -15,6 +15,7 @@
 		<PackageReference Include="AntDesign" Version="0.14.4" />
 		<PackageReference Include="AntDesign.Charts" Version="0.3.1" />
 		<PackageReference Include="Blazor-ApexCharts" Version="0.9.19-beta" />
+		<PackageReference Include="FluentValidation" Version="11.9.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="7.0.0" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 	</ItemGroup>
