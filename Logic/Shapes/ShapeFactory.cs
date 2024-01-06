@@ -25,11 +25,11 @@ namespace Logic.Shapes
             _colorBucketManager = colorBucketManager;
         }
 
-        public IShape? CreateRandomShape()
+        public IShape? CreateRandomShape(int currentIteration)
         {
             int index = _random.Next(_algorithmParameters.Shapes.Count());
 
-            var (color, isBackgroundColor) = GetRandomShapeColor();
+            var (color, isBackgroundColor) = GetRandomShapeColor(currentIteration);
             var size = GetRandomShapeSize();
             var position = GetRandomShapePosition(size);
             var rotation = GetRandomRotation();
@@ -52,14 +52,14 @@ namespace Logic.Shapes
                 isBackgroundColor);
         }
 
-        private (Color color, bool isBackgroundColor) GetRandomShapeColor()
+        private (Color color, bool isBackgroundColor) GetRandomShapeColor(int currentIteration)
         {
             if (ShouldUseBackgroundColor())
             {
                 return (_algorithmParameters.BackgroundColor, true);
             }
 
-            if (ShouldUseColorDict())
+            if (ShouldUseColorDict(currentIteration))
             {
                 var randomColor = _colorBucketManager!.GetRandomColor(0.0005);
                 return (Color.FromArgb(
@@ -83,9 +83,10 @@ namespace Logic.Shapes
             return _random.NextDouble() < _algorithmParameters.UseBackgroundColorChance;
         }
 
-        private bool ShouldUseColorDict()
+        private bool ShouldUseColorDict(int currentIteration)
         {
             return _algorithmParameters.ColorDictParameters.Enabled &&
+                currentIteration >= _algorithmParameters.ColorDictParameters.StartUsingFromIteration &&
                 _random.NextDouble() < _algorithmParameters.ColorDictParameters.UseColorDictChance;
         }
 
